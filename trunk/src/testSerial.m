@@ -1,14 +1,16 @@
-board = serial('COM6', 'Tag', 'EMGBoard'); %, 'Tag', 'EMGboard');  % wrong port? Edit here!
+board = serial('COM3', 'Tag', 'EMGBoard'); % wrong port? Edit here!
 
-try
-    fopen(board);
-catch e
-    
+fopen(board);
+
+out=[];
+for i=0:4
+    out = [out; fread(board)];
 end
 
-[out, size] = fread(board);
-disp(out');
-
+for i=1:5
+    plot(out(i,:));
+    pause;clear
+end
 
 fclose(board);
 delete(board);
