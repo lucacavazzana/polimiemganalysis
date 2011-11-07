@@ -14,7 +14,7 @@
 % 8 June 2010
 
 %% Inputs
-% debug=1: to pause the segmentation phase and plot the figuresA.2. Arti?cial Neural Network Training v
+% debug=1: to pause the segmentation phase and plot the figures
 % of each segemented signal. Debug mode
 %
 % np: is the name of the folder in which are contained the
@@ -63,7 +63,7 @@ for i = 1:length(fileIndex)
     if(isempty(pos))
         % here the movement IDs are mapped into a key ID in order to
         % make it possible to use data ordered whith different IDs
-        % inside the foldervi Appendix A. The Implementation of the Project
+        % inside the folder
         movId=[movId movement];
         movKey=[movKey movNumber];
         c{i,4}=movNumber;

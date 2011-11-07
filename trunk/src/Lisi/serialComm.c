@@ -12,7 +12,7 @@
 #include <fcntl.h>   /* File control definitions */
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions*/
-#include <stdlib.h>A.5. Serial Communication with the EMG Board xxxi
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/dir.h>
@@ -32,8 +32,8 @@ main(int argc, char* argv[]){
     if (argc == 5) {
         
         /*
-  fd1: input source 1 is for the standard input
-  fd2: input source 2 is for the EMG channel input
+         * fd1: input source 1 is for the standard input
+         * fd2: input source 2 is for the EMG channel input
          */
         int    fd1, fd2;
         
@@ -61,8 +61,7 @@ main(int argc, char* argv[]){
         char * file;
         int result code;
         
-        xxxii Appendix A. The Implementation of the Project
-                chdir("serial");
+        chdir("serial");
         
         mode t process mask = umask(0);
         
@@ -83,8 +82,8 @@ main(int argc, char* argv[]){
         strcat(file, ".txt");
         
         /*
-  Creates the directories ch1, ch2 and ch3 with the
-  relative img folders
+         * Creates the directories ch1, ch2 and ch3 with the
+         * relative img folders
          */
         
         result code =
@@ -110,9 +109,7 @@ main(int argc, char* argv[]){
                 mkdir("ch2", S IRWXU | S IRWXG | S IRWXO);
         
         chdir("ch2");
-        A.5. Serial Communication with the EMG Board xxxiii
-                result code =
-                mkdir("img", S IRWXU | S IRWXG | S IRWXO);
+                result code = mkdir("img", S IRWXU | S IRWXG | S IRWXO);
         
         umask(process mask);
         df2 = fopen(file, "w");
@@ -159,13 +156,13 @@ main(int argc, char* argv[]){
          */
         
         cfsetispeed(&options, B57600);
-        cfsetospeed(&options, B57600);xxxiv Appendix A. The Implementation of the Project
-                
-                /*
-                 * Enable the receiver and set local mode
-                 */
-                
-                options.c cflag |= (CLOCAL | CREAD);
+        cfsetospeed(&options, B57600);
+        
+        /*
+         * Enable the receiver and set local mode
+         */
+        
+        options.c cflag |= (CLOCAL | CREAD);
         
         /*
          * Set the new options for the port
@@ -208,7 +205,7 @@ main(int argc, char* argv[]){
                 handle input from source
                         (fd1, df, df1, df2, df3, &flagStart, &ls, &current, line);
             
-            /* input from source 2 available */A.5. Serial Communication with the EMG Board xxxv
+            /* input from source 2 available */
                     if (FD ISSET(fd2, &readfs))
                         handle input from source2(fd1, fd2, df, df1, df2, df3);
         }
@@ -230,7 +227,7 @@ int open input source(char * port) {
     int fd = 0;
     
     /* open the device to be non-blocking (read will
-  return immediatly) */
+     * return immediatly) */
     fd = open(port, O RDWR | O NOCTTY | O NONBLOCK);
     if (fd <0) {
         perror(port);
@@ -255,7 +252,7 @@ void handle input from source(int fd, FILE *df, FILE *df1,
     for (i = 0; i < res; i++){
         
         if(*flagStart==0 && buf[i]=='I'){
-            *flagStart=1;xxxvi Appendix A. The Implementation of the Project
+            *flagStart=1;
         }
         
         if(*flagStart==1){

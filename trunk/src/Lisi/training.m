@@ -30,7 +30,7 @@
 %
 % err: is the vector containing the errors during the test
 % phase
-%iv Appendix A. The Implementation of the Project
+%
 % perf: is the training performance achived
 %%
 function [net,mov,err,perf]=training(debug,np,plotting,ch2,ch3)

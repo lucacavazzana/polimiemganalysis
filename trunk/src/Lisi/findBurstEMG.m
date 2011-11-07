@@ -71,7 +71,7 @@ thr1(1)=sum1;
 thr2(1)=sum2;
 thr3(1)=sum3;
 
-% records the highest value found so far in all the threeA.2. Arti?cial Neural Network Training xv
+% records the highest value found so far in all the three
 % channels
 max=0;
 

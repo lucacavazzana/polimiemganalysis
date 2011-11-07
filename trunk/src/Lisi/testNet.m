@@ -5,7 +5,7 @@
 % network.
 %
 % By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.comA.4. Test xxvii
+% beppelisi@gmail.com
 % 8 June 2010
 
 %% Inputs
