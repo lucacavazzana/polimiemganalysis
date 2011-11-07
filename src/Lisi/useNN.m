@@ -31,7 +31,7 @@ function [movementsDone,errorOnTheMovementsDone,performance]...
     =useNN(feat,movNum,net)
 
 [p t vp vt tp tt]=divideData(feat,movNum,0,0,1);
-xxx Appendix A. The Implementation of the Project
+
 out = sim(net,tp);
 
 lout=length(out(1,:));

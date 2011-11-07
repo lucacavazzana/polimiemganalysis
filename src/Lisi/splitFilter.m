@@ -2,7 +2,7 @@
 % This script is used to split the incoming signal and to
 % filter it.
 %
-% By Giuseppe Lisi for Politecnico di Milanoviii Appendix A. The Implementation of the Project
+% By Giuseppe Lisi for Politecnico di Milano
 % beppelisi@gmail.com
 % 8 June 2010
 %% Inputs
@@ -51,7 +51,7 @@ f3=[];
 %Linear envelope
 if(length(y1)~= 1)
     
-    freqCamp=270; %sampling frequencyA.2. Arti?cial Neural Network Training ix
+    freqCamp=270; %sampling frequency
     cutOffFreq=2; %cutoff frequency of the low-pass filter
     nyquistFreq=cutOffFreq/(freqCamp/2);
     [b,a]=butter(2,nyquistFreq);
@@ -100,7 +100,7 @@ if(length(y1)~= 1)
         if ch2
             for j=1:length(firstDiv)
                 f2(j,:)=...
-                    extractFeatures(filtSign2(firstDiv(j):secondDiv(j)));x Appendix A. The Implementation of the Project
+                    extractFeatures(filtSign2(firstDiv(j):secondDiv(j)));
             end
         end
         
@@ -149,7 +149,7 @@ if(length(y1)~= 1)
             vline(secondDiv,'r','');
             
         end
-        % Plots the segmentation of the envelope of the secondA.2. Arti?cial Neural Network Training xi
+        % Plots the segmentation of the envelope of the second
         % channel.
         figure;
         plot(1:length(filt2),filt2)
@@ -198,7 +198,7 @@ if(length(y1)~= 1)
         
         % Plots the segmented and high-pass filtered signal of
         % Channel 3.
-        if ch3xii Appendix A. The Implementation of the Project
+        if ch3
             figure;
             plot(1:length(filtSign3),filtSign3);
             axis([0 length(filtSign3) -400 400]);
@@ -247,7 +247,7 @@ if(length(y1)~= 1)
         
         
         if ch3
-            file2save=['/Users/giuseppelisi/University/Thesis/'...A.2. Arti?cial Neural Network Training xiii
+            file2save=['/Users/giuseppelisi/University/Thesis/'...
                 'Matlab/FilesNewEmg/serial/' np '/ch3/img/image'...
                 sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
             fig = figure('visible','off');

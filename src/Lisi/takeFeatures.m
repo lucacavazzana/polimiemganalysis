@@ -1,7 +1,7 @@
 %% TakeFeatures
 % This function extracts the feature vectors from all the
 % signals contained in the np folder.
-%A.2. Arti?cial Neural Network Training vii
+%
 % By Giuseppe Lisi for Politecnico di Milano
 % beppelisi@gmail.com
 % 8 June 2010
