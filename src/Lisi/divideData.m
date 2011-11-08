@@ -25,8 +25,7 @@
 %   tp  test set
 %   tt  target of the test set
 
-function [p t vp vt tp tt]=...
-    divideData(data,movNum,pperc,vperc,tperc)
+function [p t vp vt tp tt]=divideData(data,movNum,pperc,vperc,tperc)
 
 f=cell(movNum,1);
 targ=cell(movNum,1);

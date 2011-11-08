@@ -2,15 +2,20 @@ ACQUIREDATA: acquisisce il singolo movimento
     - chiama serialComm, che acquisisce i segnali e li salva in cartelle (una per canale)
     - carica i segnali e li dà in pasto a SPLITFILTER
 
-CONVERTALL: chiama CONVERTFILE2MAT per convertire canali
+CONVERTALL: chiama CONVERTFILE2MAT per convertire canali, restituisce matriciona
 
 CONERTFILE2MAT: converte txt into mat
 
-DIVIDEDATA
-EXTRACTFEATURES
+DIVIDEDATA: splitta set di movimenti in training, validation e test
+
+EXTRACTFEATURES: dato data, restituisce iemg, mav, e trasf wavelet (ridotta da svd)
+
 FINDBURSTEMG
 MYNN
-RECOGNIZE
+RECOGNIZE:
+    - lancia serialComm per acquisizione segnali
+    -   
+
 SPLITFILTER
 TAKEFEATURES
 TESTNET
