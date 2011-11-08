@@ -1,0 +1,19 @@
+ACQUIREDATA: acquisisce il singolo movimento
+    - chiama serialComm, che acquisisce i segnali e li salva in cartelle (una per canale)
+    - carica i segnali e li dà in pasto a SPLITFILTER
+
+CONVERTALL: chiama CONVERTFILE2MAT per convertire canali
+
+CONERTFILE2MAT: converte txt into mat
+
+DIVIDEDATA
+EXTRACTFEATURES
+FINDBURSTEMG
+MYNN
+RECOGNIZE
+SPLITFILTER
+TAKEFEATURES
+TESTNET
+TESTWHOLESET
+TRAINING
+USENN
