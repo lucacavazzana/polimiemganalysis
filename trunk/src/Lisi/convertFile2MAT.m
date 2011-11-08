@@ -15,5 +15,4 @@ fid = fopen(file);
 a = fscanf(fid, '%d', [1 inf])';
 fclose(fid);
 
-
 end
