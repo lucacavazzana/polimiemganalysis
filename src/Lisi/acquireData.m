@@ -35,8 +35,7 @@ comm=['./serialComm ' np ' ' mov ' ' sprintf('%d',id) ' ' prog]
 [status,result] = unix(comm,'-echo');
 c = cell(1, 4);
 
-% the txt files saved by the external application are loaded by
-% the script.
+% the txt files saved by the external application are loaded by the script.
 file=[userPath 'FilesNewEmg/serial/' np '/ch1/' sprintf('%d',id)...
     '-' prog '-' mov '.txt'];
 

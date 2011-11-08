@@ -19,11 +19,9 @@
 
 int open input source(char *);
 
-void handle input from source(int, FILE*, FILE*, FILE*,
-        FILE*, int*, int*, int*, char*);
+void handle_input_from_source(int, FILE*, FILE*, FILE*, FILE*, int*, int*, int*, char*);
 
-void handle input from source2(int, int, FILE*, FILE*, FILE*,
-        FILE*);
+void handle_input_from_source2(int, int, FILE*, FILE*, FILE*, FILE*);
 
 int MAX(int, int);
 
@@ -41,7 +39,7 @@ main(int argc, char* argv[]){
         FILE *df, *df1, *df2, *df3;
         
         /* file descriptor set */
-        fd set readfs;
+        fd_set readfs;
         
         /* maximum file desciptor used */
         int    maxfd;
@@ -59,20 +57,18 @@ main(int argc, char* argv[]){
         char line[800];
         int flagStart=0;
         char * file;
-        int result code;
+        int result_code;
         
         chdir("serial");
         
-        mode t process mask = umask(0);
+        mode_t process_mask = umask(0);
         
-        result code = mkdir(argv[1], S IRWXU | S IRWXG |
-                S IRWXO);
+        result_code = mkdir(argv[1], S_IRWXU | S_IRWXG | S_IRWXO);
         
         chdir(argv[1]);
-        umask(process mask);
+        umask(process_mask);
         
-        file = malloc(sizeof(char) *
-                ((strlen(argv[2])+strlen(argv[4])) + 6));
+        file = malloc(sizeof(char) * ((strlen(argv[2])+strlen(argv[4])) + 6));
         
         strcpy(file, argv[3]);
         strcat(file, "-");
@@ -86,63 +82,55 @@ main(int argc, char* argv[]){
          * relative img folders
          */
         
-        result code =
-                mkdir("ch1", S IRWXU | S IRWXG | S IRWXO);
+        result_code = mkdir("ch1", S_IRWXU | S_IRWXG | S_IRWXO);
         
         chdir("ch1");
         
-        result code =
-                mkdir("img", S IRWXU | S IRWXG | S IRWXO);
+        result_code = mkdir("img", S_IRWXU | S_IRWXG | S_IRWXO);
         
-        umask(process mask);
+        umask(process_mask);
         df1 = fopen(file, "w");
         
         if(df1==NULL) {
-            printf
-                    ("Error: can't create file for writing first channel.\n");
+            printf("Error: can't create file for writing first channel.\n");
             exit(0);
         }
         
         chdir("..");
         
-        result code =
-                mkdir("ch2", S IRWXU | S IRWXG | S IRWXO);
+        result_code = mkdir("ch2", S_IRWXU | S_IRWXG | S_IRWXO);
         
         chdir("ch2");
-                result code = mkdir("img", S IRWXU | S IRWXG | S IRWXO);
+                result_code = mkdir("img", S_IRWXU | S_IRWXG | S_ IRWXO);
         
-        umask(process mask);
+        umask(process_mask);
         df2 = fopen(file, "w");
         
         if(df2==NULL) {
-            printf
-                    ("Error: can't create file for writing second channel.\n");
+            printf("Error: can't create file for writing second channel.\n");
             exit(0);
         }
         
         chdir("..");
         
-        result code =
-                mkdir("ch3", S IRWXU | S IRWXG | S IRWXO);
+        result_code = mkdir("ch3", S_IRWXU | S_IRWXG | S_IRWXO);
         
         chdir("ch3");
         
-        result code =
-                mkdir("img", S IRWXU | S IRWXG | S IRWXO);
+        result_code = mkdir("img", S_IRWXU | S_IRWXG | S_IRWXO);
         
-        umask(process mask);
+        umask(process_mask);
         df3 = fopen(file, "w");
         
         if(df3==NULL) {
-            printf
-                    ("Error: can't create file for writing third channe.\n");
+            printf("Error: can't create file for writing third channe.\n");
             exit(0);
         }
         
         /* SERIAL */
-        fd1 = open input source("/dev/tty.usbserial-A2003H2n");
-        if (fd1<0) exit(0);
-        fcntl(fd1, F SETFL, 0);
+        fd1 = open_input_source("/dev/tty.usbserial-A2003H2n");
+		if (fd1<0) {exit(0);}
+        fcntl(fd1, F_SETFL, 0);
         struct termios options;
         
         /*
@@ -162,7 +150,7 @@ main(int argc, char* argv[]){
          * Enable the receiver and set local mode
          */
         
-        options.c cflag |= (CLOCAL | CREAD);
+        options.c_cflag |= (CLOCAL | CREAD);
         
         /*
          * Set the new options for the port
@@ -182,8 +170,8 @@ main(int argc, char* argv[]){
         while (loop) {
             
             // set timeout value within input loop
-            Timeout.tv usec = 0;  // milliseconds
-            Timeout.tv sec  = 3;  // seconds
+            Timeout.tv_usec = 0;  // milliseconds
+            Timeout.tv_sec  = 3;  // seconds
             
             /* set testing for source 1 */
             FD SET(fd1, &readfs);
@@ -201,13 +189,12 @@ main(int argc, char* argv[]){
                 exit(1);
             }
             /* input from source 1 available */
-            if (FD ISSET(fd1, &readfs))
-                handle input from source
-                        (fd1, df, df1, df2, df3, &flagStart, &ls, &current, line);
+            if (FD_ISSET(fd1, &readfs))
+                handle_input_from_source(fd1, df, df1, df2, df3, &flagStart, &ls, &current, line);
             
             /* input from source 2 available */
-                    if (FD ISSET(fd2, &readfs))
-                        handle input from source2(fd1, fd2, df, df1, df2, df3);
+                    if (FD_ISSET(fd2, &readfs))
+                        handle_input_from_source2(fd1, fd2, df, df1, df2, df3);
         }
     }
     
@@ -223,12 +210,12 @@ main(int argc, char* argv[]){
 
 /*
  */
-int open input source(char * port) {
+int open_input_source(char * port) {
     int fd = 0;
     
     /* open the device to be non-blocking (read will
      * return immediatly) */
-    fd = open(port, O RDWR | O NOCTTY | O NONBLOCK);
+    fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (fd <0) {
         perror(port);
         return -1;
@@ -237,9 +224,7 @@ int open input source(char * port) {
         return fd;
 }
 
-void handle input from source(int fd, FILE *df, FILE *df1,
-        FILE *df2, FILE *df3, int *flagStart, int *ls, int *current,
-        char *line) {
+void handle_input_from_source(int fd, FILE *df, FILE *df1, FILE *df2, FILE *df3, int *flagStart, int *ls, int *current, char *line) {
     int res = 0, i;
     char buf[255];
     char ret='\r';
@@ -281,8 +266,7 @@ void handle input from source(int fd, FILE *df, FILE *df1,
     }
 }
 
-void handle input from source2
-        (int fd1, int fd2, FILE *df, FILE *df1, FILE *df2, FILE *df3) {
+void handle_input_from_source2(int fd1, int fd2, FILE *df, FILE *df1, FILE *df2, FILE *df3) {
     fclose(df1);
     fclose(df2);
     fclose(df3);
