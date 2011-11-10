@@ -46,7 +46,8 @@ int main (int argc, char *argv[]){
 	char rBuff[N] = {'0'};	// read buffer
 	DWORD bytesRead = 0;
 
-	char remBuff[14];
+	// usually 17 chars are enough for a complete data. Make it 25 to be sure.
+	char remBuff[25];
 	int rem = 0;	// #char of incomplete data set left from last scan
 
 	char startedFlag;
@@ -154,8 +155,11 @@ int main (int argc, char *argv[]){
 
 	// ******************** acquisition part ********************
 	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {	// FIXME: eventually use N instead of sizeof()?
-		// managing input
+#ifdef _PARSEDEBUG
+		printf("\n---\nBYTES RED: %d\n---\n", (int)bytesRead);
+#endif
 
+		// managing input
 		parse(rBuff, &bytesRead, ch1, ch2, ch3, &parsed, &startedFlag, remBuff, &rem);
 
 		if(bytesRead == N_WARN) { // EMGBoard outputs almost 8KB/sec
@@ -184,11 +188,11 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 	printf("PARSE FUNCT: I'm alive!\n");
 #endif
 
-	while(i<*bRead && buff[i]!='D' && buff[i]!='I'){i++;};
+	while(i<(int)(*bRead) && buff[i]!='D' && buff[i]!='I'){i++;};
 
-	if(i==*bRead) {	// add to remBuffer
+	if(i==(int)(*bRead)) {	// add to remBuffer
 		memcpy(remBuff+(*rem), buff, (int)(*bRead));
-		*rem += *bRead;
+		*rem += (int)(*bRead);
 		return;
 	}
 
@@ -208,7 +212,7 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 #ifdef _PARSEDEBUG
 		printf("---\n%.14s    <- starting chunk\n---\n", buff);
 		printf("%.13s    <- now in remBuff\n", remBuff);
-		printf("st%d %d %d    <- parsed\n", v1, v2, v3);
+		printf("d-%d %d %d    <- parsed\n---\n", v1, v2, v3);
 		fflush(stdout);
 #endif
 	}	// else ignore starting chunk
@@ -217,20 +221,24 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 	while(1){	// now managing the big part
 
 #ifdef _PARSEDEBUG
-		printf("%.13s\n", buff+i);
+		printf("%.13s ", buff+i);
 #endif
 
 		if(buff[i]=='I'){
-			while(i<*bRead && buff[i]!='D'){i++;}; // go to D or end buff
-			if(i==*bRead)	// trash this chunk, else we have D-index
+			while(i<(int)(*bRead) && buff[i]!='D'){i++;}; // go to D or end buff
+			if(i==(int)(*bRead))	// trash this chunk, else we have D-index
 				return;
 		}
 
 		// check if we have a complete data set (look for the next D)
 		j = i+1;
-		while(j<*bRead && buff[j]!='D' && buff[j]!='I'){j++;}
+		while(j<(int)(*bRead) && buff[j]!='D' && buff[j]!='I'){j++;}
 
-		if(j<(*bRead)){	// found next 'D'
+#ifdef _PARSEDEBUG
+		printf(" this D in %d, next in %d (%d)\n", i, j, (int)(*bRead));
+#endif
+
+		if(j<((int)(*bRead))){	// found next 'D'
 
 			i = i+2;	// pointing to the first number
 			v1 = atoi(buff+i);
@@ -252,6 +260,8 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 #ifdef _PARSEDEBUG
 			printf("---\n%.14s    <- moved to remBuff (last chars could be dirty Bytes from previous parsing)\n---\n", remBuff);
 			printf("PARSE FUNCT: exit\n");
+			if ((int)(*bRead)!=N)	// if this error occurs, probably bRead was overwritten by an buffOverflow somewhere
+				ERRBOX("DAMN!");
 			fflush(stdout);
 #endif
 			return;
