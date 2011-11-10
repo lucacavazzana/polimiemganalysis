@@ -22,6 +22,8 @@
 // linux headers here
 #endif
 
+#define _PARSEDEBUG
+
 #define APPNAME "serialManager"
 #define ERRBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONERROR | MB_OK )	// find a way to make this box non-blocking
 #define WARNBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONWARNING | MB_OK )
@@ -44,7 +46,7 @@ int main (int argc, char *argv[]){
 	char rBuff[N] = {'0'};	// read buffer
 	DWORD bytesRead = 0;
 
-	char remBuff[11];
+	char remBuff[14];
 	int rem = 0;	// #char of incomplete data set left from last scan
 
 	char startedFlag;
@@ -57,7 +59,7 @@ int main (int argc, char *argv[]){
 
 	// options
 	char verb = 0;	// verbose
-	char *port = "COM6";	// port name (my default port is COM6)
+	char *port = "COM6";	// FIXME: default port name (my default port is COM6)
 	int nAcq = 0;
 
 
@@ -89,7 +91,7 @@ int main (int argc, char *argv[]){
 
 
 	// opening port
-	hSer = CreateFile(port,	//FIXME: find right port
+	hSer = CreateFile(port,
 			GENERIC_READ | GENERIC_WRITE,
 			0,
 			NULL,
@@ -151,12 +153,9 @@ int main (int argc, char *argv[]){
 			PURGE_TXCLEAR | PURGE_RXCLEAR);
 
 	// ******************** acquisition part ********************
-	if(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {	// FIXME: eventually use N instead of sizeof()
+	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {	// FIXME: eventually use N instead of sizeof()?
 		// managing input
 
-		parse(rBuff, &bytesRead, ch1, ch2, ch3, &parsed, &startedFlag, remBuff, &rem);
-
-		ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL);
 		parse(rBuff, &bytesRead, ch1, ch2, ch3, &parsed, &startedFlag, remBuff, &rem);
 
 		if(bytesRead == N_WARN) { // EMGBoard outputs almost 8KB/sec
@@ -169,15 +168,21 @@ int main (int argc, char *argv[]){
 			fflush(stdout);
 
 		}
-	}
+	}	// end parsing WHILE
 
 	CloseHandle(hSer);
 	return 0;
-}
+}	// end MAIN
 
 
 void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD* pars, char *startedFlag, char remBuff[], int *rem){
 	int j, i=0;
+
+	int v1, v2, v3;
+
+#ifdef _PARSEDEBUG
+	printf("PARSE FUNCT: I'm alive!\n");
+#endif
 
 	while(i<*bRead && buff[i]!='D' && buff[i]!='I'){i++;};
 
@@ -187,14 +192,34 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 		return;
 	}
 
-	if(*rem) {
+	if(*rem) {	// managing remaining chunk from previous acq
 		memcpy(remBuff+(*rem), buff, i);
+
 		// TODO: do stuff
+		v1 = atoi(remBuff+2);	// pointing to the first number
+		j=3;
+		while(remBuff[j++]!=' '); // looking for second number
+		v2 = atoi(remBuff+j);
+		while(remBuff[j++]!=' '); // looking for third number
+		v3 = atoi(remBuff+j);
+
 		*rem = 0;
+
+#ifdef _PARSEDEBUG
+		printf("---\n%.14s    <- starting chunk\n---\n", buff);
+		printf("%.13s    <- now in remBuff\n", remBuff);
+		printf("st%d %d %d    <- parsed\n", v1, v2, v3);
+		fflush(stdout);
+#endif
 	}	// else ignore starting chunk
 
-	while(1){
+
+	while(1){	// now managing the big part
+
+#ifdef _PARSEDEBUG
 		printf("%.13s\n", buff+i);
+#endif
+
 		if(buff[i]=='I'){
 			while(i<*bRead && buff[i]!='D'){i++;}; // go to D or end buff
 			if(i==*bRead)	// trash this chunk, else we have D-index
@@ -208,19 +233,29 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 		if(j<(*bRead)){	// found next 'D'
 
 			i = i+2;	// pointing to the first number
-			printf("d-%d ", atoi(buff+i));
+			v1 = atoi(buff+i);
 			while(buff[i++]!=' '); // looking for second number
-			printf("%d ", atoi(buff+i));
+			v2 = atoi(buff+i);
 			while(buff[i++]!=' '); // looking for third number
-			printf("%d\n", atoi(buff+i));
-			fflush(stdout);
+			v3 = atoi(buff+i);
 
 			i = j;
+
+#ifdef _PARSEDEBUG
+			printf("d-%d %d %d\n", v1, v2, v3);
+			fflush(stdout);
+#endif
 
 		} else {	// incomplete data set
 			memcpy(remBuff, buff+i, j-i);
 			*rem = j-i;
+#ifdef _PARSEDEBUG
+			printf("---\n%.14s    <- moved to remBuff (last chars could be dirty Bytes from previous parsing)\n---\n", remBuff);
+			printf("PARSE FUNCT: exit\n");
+			fflush(stdout);
+#endif
 			return;
 		}
-	}
-}
+	}	// end WHILE(1)
+
+}	// end parse FUNCTION
