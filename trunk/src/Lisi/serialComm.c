@@ -28,11 +28,10 @@
 #define APPNAME "serialManager"
 #define ERRBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONERROR | MB_OK )	// find a way to make this box non-blocking
 #define WARNBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONWARNING | MB_OK )
-#define N_ACQ 10	// #acquisitions
-#define N 1000
-//#define N_WARN N*4/5
+#define BUFF_SIZE 1000
+#define ACQ_SIZE 1000	// single acquisition size
 
-void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
+void parse(char buff[], DWORD* bRead, unsigned long *sets; FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
 
 int main (int argc, char** argv){
 
@@ -45,7 +44,7 @@ int main (int argc, char** argv){
 			"	-g:	gesture name\n";
 
 	HANDLE hSer;	// handle serial port
-	char rBuff[N] = {'0'};	// read buffer
+	char rBuff[BUFF_SIZE] = {'0'};	// read buffer
 	DWORD bytesRead = 0;
 
 	// usually 16 chars are enough for a complete data. Make it 25 to be sure.
@@ -53,10 +52,9 @@ int main (int argc, char** argv){
 	int rem = 0;	// #char of incomplete data set left from last scan
 
 	char startedFlag;
+	unsigned long sets = 0;	//
 
 	FILE *ch1 = NULL, *ch2 = NULL, *ch3 = NULL; // FIXME replace with output handlers
-	char* filePath = NULL;
-	char* gestName = NULL;
 
 	// options
 	char verb = 0;	// verbose
@@ -66,7 +64,10 @@ int main (int argc, char** argv){
 	char *port = "TTY";	// FIXME: default port name (my default port is ...)
 #endif
 	int nAcq = 0;
-	char *outPath = NULL;
+	char* outPath = NULL;
+	char* gestName = NULL;
+
+	char* filePath = NULL;
 
 	// options parsing -------------------------------------
 	int c;
@@ -109,7 +110,7 @@ int main (int argc, char** argv){
 	}
 
 	/***************************************************************************
-	 *******    initialize output streams    ***********************************
+	 ******    initialize output streams    ************************************
 	 **************************************************************************/
 	if(nAcq) {	// files
 
@@ -161,7 +162,7 @@ int main (int argc, char** argv){
 	}
 
 	/***************************************************************************
-	 *******    initialize input board    **************************************
+	 ******    initialize input board    ***************************************
 	 **************************************************************************/
 	hSer = CreateFile(port,
 			GENERIC_READ | GENERIC_WRITE,
@@ -224,7 +225,7 @@ int main (int argc, char** argv){
 	printf("Starting acquisition\n");
 
 	/***************************************************************************
-	 ***************    ACQUISITION    *****************************************
+	 *****    ACQUISITION    ***************************************************
 	 **************************************************************************/
 	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
 
@@ -233,8 +234,12 @@ int main (int argc, char** argv){
 
 		// counting acquisitions
 		if(nAcq) {
-			printf("acq %d\n", nAcq);
-			if (nAcq-- == 1)
+			if(sets > ACQ_SIZE) {
+				if(verb)
+					printf("Acq %d completed\n", nAcq);
+				sets = 0;
+			}
+			if (--nAcq == 1)
 				break;
 		}
 	}	// end parsing WHILE
@@ -250,9 +255,8 @@ int main (int argc, char** argv){
 }	// end MAIN
 
 
-void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem){
+void parse(char buff[], DWORD* bRead, unsigned long* sets, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem){
 	int j, i=0;
-
 	int v1, v2, v3;
 
 #ifdef _PARSEDEBUG
@@ -288,6 +292,7 @@ void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *sta
 			fprintf(ch1, "%d\n", v1);
 			fprintf(ch2, "%d\n", v2);
 			fprintf(ch3, "%d\n", v3);
+			*sets++;
 		}
 
 		*rem = 0;
@@ -339,6 +344,7 @@ void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *sta
 				fprintf(ch1, "%d\n", v1);
 				fprintf(ch2, "%d\n", v2);
 				fprintf(ch3, "%d\n", v3);
+				*sets++;
 			}
 
 			i = j;

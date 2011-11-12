@@ -27,41 +27,54 @@
 function acquireData(np, mov, id, prog)
 
 close all;
-userPath = 'C:/Users/luca/Documents/MATLAB/EMGAnalysis/' % FIXME: set your path here!
+
+if(exist('DEBUG','var'))
+    deb = DEBUG;
+end
+
+if(ispc())
+    serialComm = 'C:\Users\luca\workspace\serialComm\Debug\';    % FIXME: this is my path...
+    serialComm = [serialComm 'serialComm.exe'];
+else
+    serialComm = './serialComm ';
+end
 
 % calls the external application serialComm, which creates a new
 % folder and store the acquired data inside (txt files).
-comm=['./serialComm ' np ' ' mov ' ' sprintf('%d',id) ' ' prog]
-[status,result] = unix(comm,'-echo');
+[status, result] = system([serialComm ' -n ' sprintf('%d',1) ' -o ' np ' -g ' mov sprintf('%d', prog)]);
+
+if(status == -1)
+    error(result);
+end
+
 c = cell(1, 4);
 
 % the txt files saved by the external application are loaded by the script.
-file=[userPath 'FilesNewEmg/serial/' np '/ch1/' sprintf('%d',id)...
-    '-' prog '-' mov '.txt'];
+if(ispc())
+    file = [np '\' mov sprintf('%d', prog) '\ch1.txt'];
+else
+    file = [np '/' mov sprintf('%d', prog) '/ch1.txt'];
+end
 
 fid = fopen(file);
 c{1,1} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
 
-file=[userPath 'FilesNewEmg/serial/' np '/ch2/' sprintf('%d',id)...
-    '-' prog '-' mov '.txt'];
-
+file(end-4) = '2';
 fid = fopen(file);
 c{1,2} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
 
-file=[userPath 'FilesNewEmg/serial/' np '/ch3/' sprintf('%d',id)...
-    '-' prog '-' mov '.txt'];
-
+file(end-4) = '3';
 fid = fopen(file);
 c{1,3} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
-c{1,4}=id;
+
+c{1,4} = mov;
+
+disp(c{1,1});
 
 % useful to see if the signal has been segmented well.
-f=splitFilter(c,1,1,0,1,np,1,1);
+f = splitFilter(c,1,1,0,1,np,1,1);
 
 end
