@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -22,54 +23,58 @@
 // linux headers here
 #endif
 
-#define _PARSEDEBUG
+//#define _PARSEDEBUG
 
 #define APPNAME "serialManager"
 #define ERRBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONERROR | MB_OK )	// find a way to make this box non-blocking
 #define WARNBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONWARNING | MB_OK )
 #define N_ACQ 10	// #acquisitions
-#define N 500
-#define N_WARN N*4/5
+#define N 1000
+//#define N_WARN N*4/5
 
-void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD* pars, char *startedFlag, char remBuff[], int *rem);
+void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
 
-int main (int argc, char *argv[]){
+int main (int argc, char** argv){
 
-	char HELPTXT[] =  "help text\n"
-			"	-h:		print help"
-			"	-v:		verbose\n"
-			"	-d: 	input port (default: COM6 of TTY...)\n"
-			"	-n:		# of interactive acquisitions\n"
-			"	-p:		root path to save data files\n";
+	char HELPTXT[] =  "help text\n"	// FIXME
+			"	-h:	print help\n"
+			"	-v:	verbose\n"
+			"	-d:	input port (default: COM6 or TTY...)\n"
+			"	-n:	# of acquisitions to save\n"
+			"	-p:	root path to save output files\n"
+			"	-g:	gesture name\n";
 
 	HANDLE hSer;	// handle serial port
 	char rBuff[N] = {'0'};	// read buffer
 	DWORD bytesRead = 0;
 
-	// usually 17 chars are enough for a complete data. Make it 25 to be sure.
+	// usually 16 chars are enough for a complete data. Make it 25 to be sure.
 	char remBuff[25];
 	int rem = 0;	// #char of incomplete data set left from last scan
 
 	char startedFlag;
 
-	char ch1[N+1] = {'0'};
-	char ch2[N+1] = {'0'};
-	char ch3[N+1] = {'0'};
-	DWORD parsed = 0;	// # parsed bytes
-
+	FILE *ch1 = NULL, *ch2 = NULL, *ch3 = NULL; // FIXME replace with output handlers
+	char* filePath = NULL;
+	char* gestName = NULL;
 
 	// options
 	char verb = 0;	// verbose
+#ifdef _WIN32
 	char *port = "COM6";	// FIXME: default port name (my default port is COM6)
+#else
+	char *port = "TTY";	// FIXME: default port name (my default port is ...)
+#endif
 	int nAcq = 0;
+	char *outPath = NULL;
 
-
-	// options parsing
+	// options parsing -------------------------------------
 	int c;
-	while ((c = getopt (argc, argv, "dhv")) != -1) {
+	while ((c = getopt (argc, argv, "vhd:n:o:g:")) != -1) {
 		switch(c) {
 		case 'd':
 			port = optarg;
+			printf("- port  '%s' set\n", port);
 			break;
 		case 'h':
 			printf(HELPTXT);
@@ -79,19 +84,85 @@ int main (int argc, char *argv[]){
 			verb = 1;
 			break;
 		case 'n':
-			nAcq = (int)*optarg;
+			nAcq = atoi((char*)optarg);
+			break;
+		case 'o':
+			outPath = optarg;
+			printf("- writing output into '%s' folder\n", outPath);
+			// TODO: check folder
+			break;
+		case 'g':
+			gestName = optarg;
 			break;
 		case '?':
-			printf("Unknown option '-%c'\nSee help for more info\n", optopt);
+			printf("See help for more info\n");
 			return 0;
 		default:
 			abort();
 		}
 	}
 
+	// checking parameters
+	if(nAcq && !outPath) {
+		printf("\nERROR: specify the output path to save data\n");
+		exit(-1);
+	}
 
+	/***************************************************************************
+	 *******    initialize output streams    ***********************************
+	 **************************************************************************/
+	if(nAcq) {	// files
 
-	// opening port
+		if(mkdir(outPath)) {
+			if(errno == EEXIST) {
+				printf("WARNING: '%s' folder already exists\n", outPath);
+			} else {
+				printf("ERROR: could not create '%s' folder \n", outPath);
+				exit(-1);
+			}
+		}
+
+		if(gestName) {
+			filePath = malloc(sizeof(char)*(strlen(outPath)+strlen(gestName)+10));
+			strcpy(filePath, outPath);
+#ifdef _WIN32
+			strcat(filePath, "\\");
+#else
+			strcat(filePath, "/");
+#endif
+			strcat(filePath, gestName);
+
+			if(mkdir(filePath)) {
+				printf("ERRROR: could not create '%s' folder\n", filePath);
+				exit(-1);
+			}
+		} else {
+			filePath = malloc(sizeof(char)*(strlen(outPath)+10));
+			strcpy(filePath, outPath);
+		}
+
+#ifdef _WIN32
+		strcat(filePath, "\\ch1.txt");
+#else
+		strcat(filePath, "/ch1.txt");
+#endif
+		printf("%s\n", filePath);
+		ch1 = fopen(filePath, "w");
+		filePath[strlen(filePath)-5] = '2';
+		ch2 = fopen(filePath, "w");
+		filePath[strlen(filePath)-5] = '3';
+		ch3 = fopen(filePath, "w");
+		if(!(ch1 && ch2 && ch3)) {
+			printf("ERROR: could not open output files\n");
+			exit(-1);
+		}
+	} else {	// sockets / pipes
+
+	}
+
+	/***************************************************************************
+	 *******    initialize input board    **************************************
+	 **************************************************************************/
 	hSer = CreateFile(port,
 			GENERIC_READ | GENERIC_WRITE,
 			0,
@@ -102,12 +173,12 @@ int main (int argc, char *argv[]){
 
 	if(hSer == INVALID_HANDLE_VALUE) {
 		if(GetLastError() == ERROR_FILE_NOT_FOUND) {
-			printf("Wrong Port");
-			//ERRBOX("Wrong Port");
+			printf("Wrong serial port");
+			//ERRBOX("Wrong serial port");
 		}
 		else {
-			printf("An error occurred");
-			//ERRBOX("An error occurred");
+			printf("A serial error occurred");
+			//ERRBOX("A serial error occurred");
 		}
 		exit(-1);
 	}
@@ -116,8 +187,8 @@ int main (int argc, char *argv[]){
 	dcbPars.DCBlength = sizeof(dcbPars);
 
 	if (!GetCommState(hSer, &dcbPars)) {
-		fprintf(stderr, "error getting state");
-		ERRBOX("error getting state");
+		fprintf(stderr, "Error getting serial state");
+		ERRBOX("Error getting serial state");
 	}
 
 	dcbPars.BaudRate = CBR_57600;
@@ -136,7 +207,7 @@ int main (int argc, char *argv[]){
 	timeouts.ReadTotalTimeoutMultiplier=0;
 	timeouts.WriteTotalTimeoutConstant=0;
 	timeouts.WriteTotalTimeoutMultiplier=0;*/
-	timeouts.ReadIntervalTimeout = 50;
+	timeouts.ReadIntervalTimeout = 50;	// TODO: test to find suitable values
 	timeouts.ReadTotalTimeoutConstant = 50;
 	timeouts.ReadTotalTimeoutMultiplier = 10;
 	timeouts.WriteTotalTimeoutConstant = 50;
@@ -150,42 +221,43 @@ int main (int argc, char *argv[]){
 	if(verb)
 		printf("Serial port opened\n");
 
-	PurgeComm(hSer, PURGE_TXABORT | PURGE_RXABORT |
-			PURGE_TXCLEAR | PURGE_RXCLEAR);
+	printf("Starting acquisition\n");
 
-	// ******************** acquisition part ********************
-	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {	// FIXME: eventually use N instead of sizeof()?
-#ifdef _PARSEDEBUG
-		printf("\n---\nBYTES RED: %d\n---\n", (int)bytesRead);
-#endif
+	/***************************************************************************
+	 ***************    ACQUISITION    *****************************************
+	 **************************************************************************/
+	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
 
 		// managing input
-		parse(rBuff, &bytesRead, ch1, ch2, ch3, &parsed, &startedFlag, remBuff, &rem);
+		parse(rBuff, &bytesRead, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
 
-		if(bytesRead == N_WARN) { // EMGBoard outputs almost 8KB/sec
-			printf(	"------------------------------------"
-					"-----------------------------------\n"
-					"WARNING: application too slow or buffer"
-					" size too small for the EMGBoard\n"
-					"------------------------------------"
-					"-----------------------------------\n");
-			fflush(stdout);
-
+		// counting acquisitions
+		if(nAcq) {
+			printf("acq %d\n", nAcq);
+			if (nAcq-- == 1)
+				break;
 		}
 	}	// end parsing WHILE
 
+
+	// bye bye
 	CloseHandle(hSer);
+	fclose(ch1);
+	fclose(ch2);
+	fclose(ch3);
+
 	return 0;
 }	// end MAIN
 
 
-void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD* pars, char *startedFlag, char remBuff[], int *rem){
+void parse(char buff[], DWORD* bRead, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem){
 	int j, i=0;
 
 	int v1, v2, v3;
 
 #ifdef _PARSEDEBUG
-	printf("PARSE FUNCT: I'm alive!\n");
+	if(*bRead)
+		printf("PARSE FUNCT: I'm alive! Bytes red: %d\n", (int)*bRead);
 #endif
 
 	while(i<(int)(*bRead) && buff[i]!='D' && buff[i]!='I'){i++;};
@@ -199,13 +271,24 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 	if(*rem) {	// managing remaining chunk from previous acq
 		memcpy(remBuff+(*rem), buff, i);
 
-		// TODO: do stuff
+		// parsing values
+		/*
 		v1 = atoi(remBuff+2);	// pointing to the first number
 		j=3;
 		while(remBuff[j++]!=' '); // looking for second number
 		v2 = atoi(remBuff+j);
 		while(remBuff[j++]!=' '); // looking for third number
 		v3 = atoi(remBuff+j);
+		 */
+		sscanf(remBuff+2,"%d %d %d", &v1, &v2, &v3);
+
+		// writing output
+
+		if(ch1 && ch2 && ch3) {
+			fprintf(ch1, "%d\n", v1);
+			fprintf(ch2, "%d\n", v2);
+			fprintf(ch3, "%d\n", v3);
+		}
 
 		*rem = 0;
 
@@ -235,17 +318,28 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 		while(j<(int)(*bRead) && buff[j]!='D' && buff[j]!='I'){j++;}
 
 #ifdef _PARSEDEBUG
-		printf(" this D in %d, next in %d (%d)\n", i, j, (int)(*bRead));
+		printf(" D in %d, next in %d (%d)\n", i, j, (int)(*bRead));
 #endif
 
 		if(j<((int)(*bRead))){	// found next 'D'
 
+			// parsing values
+			/*
 			i = i+2;	// pointing to the first number
 			v1 = atoi(buff+i);
 			while(buff[i++]!=' '); // looking for second number
 			v2 = atoi(buff+i);
 			while(buff[i++]!=' '); // looking for third number
 			v3 = atoi(buff+i);
+			 */
+			sscanf(buff+i+2,"%d %d %d", &v1, &v2, &v3);
+
+			// writing output
+			if(ch1 && ch2 && ch3) {
+				fprintf(ch1, "%d\n", v1);
+				fprintf(ch2, "%d\n", v2);
+				fprintf(ch3, "%d\n", v3);
+			}
 
 			i = j;
 
@@ -260,8 +354,8 @@ void parse(char buff[], DWORD* bRead, char ch1[], char ch2[], char ch3[], DWORD*
 #ifdef _PARSEDEBUG
 			printf("---\n%.14s    <- moved to remBuff (last chars could be dirty Bytes from previous parsing)\n---\n", remBuff);
 			printf("PARSE FUNCT: exit\n");
-			if ((int)(*bRead)!=N)	// if this error occurs, probably bRead was overwritten by an buffOverflow somewhere
-				ERRBOX("DAMN!");
+			//if ((int)(*bRead)!=N)	// if this error occurs, probably bRead was overwritten by an buffOverflow somewhere
+			//	ERRBOX("DAMN!");
 			fflush(stdout);
 #endif
 			return;
