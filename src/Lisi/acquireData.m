@@ -1,4 +1,5 @@
 %% AcquireData
+%
 % This function is used to acquire the data from the EMG board.
 % It calls an external application written in C, which starts
 % the communication with the board and saves the signals into
@@ -25,12 +26,7 @@
 %% Outputs
 %%
 function acquireData(np, mov, id, prog)
-
 close all;
-
-if(exist('DEBUG','var'))
-    deb = DEBUG;
-end
 
 if(ispc())
     serialComm = 'C:\Users\luca\workspace\serialComm\Debug\';    % FIXME: this is my path...
@@ -39,9 +35,10 @@ else
     serialComm = './serialComm ';
 end
 
-% calls the external application serialComm, which creates a new
-% folder and store the acquired data inside (txt files).
-[status, result] = system([serialComm ' -n ' sprintf('%d',1) ' -o ' np ' -g ' mov sprintf('%d', prog)]);
+% calls the external application serialComm, which creates a
+% new folder and store the acquired data inside (txt files).
+[status, result] = system([serialComm ' -d ' port ' -n ' ...
+    sprintf('%d',1) ' -o ' np ' -g ' mov sprintf('%d', prog)]);
 
 if(status == -1)
     error(result);
@@ -75,6 +72,6 @@ c{1,4} = mov;
 disp(c{1,1});
 
 % useful to see if the signal has been segmented well.
-f = splitFilter(c,1,1,0,1,np,1,1);
+splitFilter(c,1,1,0,1,np,1,1);
 
 end
