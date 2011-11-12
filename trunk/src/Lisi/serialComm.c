@@ -31,7 +31,8 @@
 #define BUFF_SIZE 1000
 #define ACQ_SIZE 1000	// single acquisition size
 
-void parse(char buff[], DWORD* bRead, unsigned long *sets; FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
+void parse(char buff[], DWORD* bRead, unsigned long* sets,
+		FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
 
 int main (int argc, char** argv){
 
@@ -230,7 +231,7 @@ int main (int argc, char** argv){
 	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
 
 		// managing input
-		parse(rBuff, &bytesRead, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
+		parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
 
 		// counting acquisitions
 		if(nAcq) {
@@ -255,7 +256,8 @@ int main (int argc, char** argv){
 }	// end MAIN
 
 
-void parse(char buff[], DWORD* bRead, unsigned long* sets, FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem){
+void parse(char buff[], DWORD* bRead, unsigned long* sets,
+		FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem) {
 	int j, i=0;
 	int v1, v2, v3;
 
