@@ -31,7 +31,7 @@
 % f: is the cell array containing all the feature vector
 % related to the signal contained in c at the position i.
 %%
-function f=splitFilter(c,debug,acq,plotting,i,np,ch2,ch3)
+function f=splitFilter(c, debug, acq, plotting, i, np, ch2, ch3)
 
 c1=c{i,1};
 c2=c{i,2};
@@ -141,7 +141,7 @@ if(length(y1)~= 1)
         % channel.
         figure;
         plot(1:length(filt1),filt1)
-        hold on;
+        hold on; grid on;
         plot(1:length(thr1),thr1,'y');
         axis([1 length(filt1) 0 150]);
         if(~isempty(firstDiv))
@@ -153,7 +153,7 @@ if(length(y1)~= 1)
         % channel.
         figure;
         plot(1:length(filt2),filt2)
-        hold on;
+        hold on; grid on;
         plot(1:length(thr2),thr2,'y');
         axis([0 length(filt2) 0 150]);
         if(~isempty(firstDiv))
@@ -166,7 +166,7 @@ if(length(y1)~= 1)
         % channel.
         figure;
         plot(1:length(filt3),filt3)
-        hold on;
+        hold on; grid on;
         plot(1:length(thr3),thr3,'y');
         axis([0 length(filt3) 0 150]);
         if(~isempty(firstDiv))
@@ -207,7 +207,7 @@ if(length(y1)~= 1)
                 vline(secondDiv,'r','');
             end
         end
-        numberOFMovements=length(firstDiv)
+        numberOFMovements=length(firstDiv);
         if(~acq)
             ginput(1);
             close all;
