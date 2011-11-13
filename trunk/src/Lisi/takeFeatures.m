@@ -28,8 +28,7 @@
 % the corresponding target vecors of the signals.
 %%
 function feat=takeFeatures(c,debug,plotting,np,ch2,ch3)
-nsamp=size(c);
-nsamp=nsamp(1);
+nsamp=size(c,1);
 feat = cell(nsamp, 2);
 
 for i=1:nsamp

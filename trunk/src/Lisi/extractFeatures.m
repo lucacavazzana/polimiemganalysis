@@ -15,28 +15,17 @@
 %% Outputs
 % f: is the feature vector.
 %%
-function f=extractFeatures(data)
-iemg=calculateIEMG(data);
-mav=calculateMAV(data);
-w=myWavelet(data);
-f=[iemg mav];
-f=cat(2,f,w');
-
-% integral EMG
-function iemg=calculateIEMG(data)
-iemg=sum(abs(data));
-
-% mean absolute value
-function mav=calculateMAV(data)
-mav=sum(abs(data))/length(data);
+function f = extractFeatures(data)
 
 % Wavelet Coefficient + SVD
-function w=myWavelet(data)
+w = svd(cwt(data,1:5,'morl'));
 
-% computing the wavelet
-c = cwt(data,1:5,'morl');
+% integral EMG
+iemg = sum(abs(data));
+% mean absolute value
+mav = iemg/length(data);
 
-% reducing the dimensionality of the wavelet coefficient matrix
-vector=svd(c);
+f = [iemg mav];
+f = cat(2,f,w');
 
-w=vector;
+end
