@@ -1,4 +1,7 @@
 %% Convert All
+
+% parsa dati: file -> cell. Inutile se passi a pipe.
+
 % This function converts all the txt files into the matlab
 % format.
 % Future users have to replace

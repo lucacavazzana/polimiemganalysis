@@ -1,4 +1,7 @@
 %% ConvertFile2Mat
+
+% parsa dati: file -> cell. Inutile se passi a pipe.
+
 % This function converts each single txt file in matlab format
 %
 % By Giuseppe Lisi for Politecnico di Milano

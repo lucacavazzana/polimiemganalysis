@@ -38,8 +38,8 @@ close all;
 clc;
 
 % Converts data: txt -> matlab
-disp('Converting in matlab format')
-[c mov]=convertAll(debug,np,plotting);
+disp('Converting in matlab format');
+c = convertAll(debug,np,plotting);
 
 % finds the size of the output vector
 movNum=net.outputs{2}.processedSize;
