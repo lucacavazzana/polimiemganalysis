@@ -1,31 +1,21 @@
-%% AcquireData
-%
-% This function is used to acquire the data from the EMG board.
-% It calls an external application written in C, which starts
-% the communication with the board and saves the signals into
-% different folders.
-% This script actually load the data stored into the folders
-% created by the C application.
-%
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
-%% Inputs
-%
-% np: is the new folder in which we want to save the acquired
-% data. Usually it is the name of the person.
-%
-% mov: is the name of the movement.
-%
-% id: is the movement id (for example the ID of the Close Hand
-% is 1)
-%
-% prog: is the progressive number of a given movement (at the
-% first acquisition of a Close Hand the prog is 1, at the
-% second acquisition of the Close Hand is 2 and so on )
-%% Outputs
-%%
 function acquireData(np, mov, id, prog)
+%ACQUIREDATA    Acquires data from the EMG board.
+%   ACQUIREDATA calls an external application written in C, which starts
+%   the communication with the board and saves the signals into different
+%   folders. This script actually load the data stored into the folders
+%   created by the C application.
+%
+%   INPUTS:
+%   np:     folder where ouput data will be saved (tipically the name of
+%           the patient).
+%   mov:    (subfolder) name of the movement.
+%   id:     code of the movement.
+%   prog:   progressive number
+
+%	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+%	luca.cavazzana@gmail.com, beppelisi@gmail.com
+%	9 November 2010
+
 close all;
 
 if(ispc())
