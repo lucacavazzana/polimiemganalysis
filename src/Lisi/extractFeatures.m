@@ -1,21 +1,12 @@
-%% ExtractFeatures
-%  this function extract the features from a given burst
-%
-%  Features:
-%   - IEMG (Integral EMG)
-%   - MAV (Absolute Mean Value)
-%   - WAVELET COEFFICIENTS + SVD
-%
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
-
-%% Inputs
-%  data: is the vector representing a burst
-%% Outputs
-% f: is the feature vector.
-%%
 function f = extractFeatures(data)
+%EXTRACTFEATURES    extracts features from an EMG burst
+%	F = EXTRACTFEATURES(D) returns the feature vector F (integral EMG,
+%	absolute mean value, wavelet coefficients after SVD) of the burst
+%	dataset D.
+
+% By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+% luca.cavazzana@gmail.com, beppelisi@gmail.com
+% 9 November 2011
 
 % Wavelet Coefficient + SVD
 w = svd(cwt(data,1:5,'morl'));

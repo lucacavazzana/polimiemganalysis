@@ -1,10 +1,13 @@
-%% EMGANALYSIS.M
-%
-% bla bla bla
+%EMGANALYSIS
+%   bla bla bla.
+
+% By Luca Cavazzana for Politecnico di Milano
+% luca.cavazzana@gmail.com
+% FIXME: update
 
 global port;
 
-%% MY DEBUG VALUES
+% MY DEBUG VALUES
 global DEBUG;
 DEBUG = 1;
 
@@ -16,7 +19,7 @@ if DEBUG
     end
 else
     
-    % portGUI
+    port = portGUI();
     
 end
 
