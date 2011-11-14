@@ -1,5 +1,6 @@
 function [firstDiv, secondDiv] = ...
     findBurstEMG(s1, s2, s3, debug, ch2, ch3)
+% REWRITING FINDBURSTEMG
 %FINDBURSTEMG   Finds the edges of each burst
 %   [FIRSTDIV, SECONDDIV] = FINDBURSTEMG(S1, S2, S3)
 %   returns the vector of the starting edge FIRSTDIVISION and ending edge
@@ -17,14 +18,16 @@ function [firstDiv, secondDiv] = ...
 % ch2=1: if the second channel is used.
 %
 % ch3=1: if the third channel is used.
+%%
+%   calcolato segnale integrale (inizio alzato un po' per evitare falsi
+%   positivi iniziali). 
 
-
-ls = length(s1); % length of the signal FIXME: make sure signals are all the same lenght
+ls = min([length(s1), length(s2), length(s3)]); % length of the signal
 firstDiv = [];
 secondDiv = [];
 
-% 54 samples correspond to 0.2 seconds of signal(@ 270Samp/Sec).
-% Normal burst duration corresponding to 1 second
+% 54 samples correspond to 0.2 seconds of signal(@ 270samp/sec)
+% Normal burst duration corresponds to 1 second
 sampleDur = 54*5;
 
 % normal movement
@@ -33,11 +36,10 @@ delay = 40;
 % short movement
 % delay = 20;
 
-% the lower level under which it is impossible to start a burst
-cost = 10;
+cost = 10; % the lower level under which it is impossible to start a burst
 
-% factor for which the initial part of the moving average is
-% computed in order to avoid fake initial bursts
+% factor to avoid initial part of the moving average triggers fake initial
+% bursts
 mult = 30;
 
 
@@ -51,15 +53,18 @@ next1 = 1;
 next2 = 1;
 next3 = 1;
 
-%sum for the threshold computation.
-sum1 = s1(1)*mult;
-sum2 = s2(1)*mult;
-sum3 = s3(1)*mult;
+% sums for the threshold computation and thresholds
+sum1 = s1(1:ls); sum1(1) = s1(1)*mult;
+sum1 = cumsum(sum1);
+thr1 = sum1./(1:ls);
 
-%threshold for the three channels
-thr1(1) = sum1;
-thr2(1) = sum2;
-thr3(1) = sum3;
+sum2 = s2(1:ls); sum2(1) = s2(1)*mult;
+sum2 = cumsum(sum2);
+thr2 = sum2./(1:ls);
+
+sum3 = s3(1:ls); sum3(1) = s3(1)*mult;
+sum3 = cumsum(sum3);
+thr3 = sum3./(1:ls);
 
 % records the highest value found so far in all the three
 % channels
@@ -73,32 +78,23 @@ restart = 0;
 
 % empiric values for the decision to take about the burst
 % start.
-perc = .22;
+perc = 1.22;
 clos = .05;
 
 % burst edges detection
 for i = 2:ls
     
-    % FIXME: potrei partire immediatamente con un cumsum(s1)./(1:ls) fuori 
-    % dal ciclo
-    sum1 = sum1+s1(i);
-    thr1(i) = sum1/i;
-    sum2 = sum2+s2(i);
-    thr2(i) = sum2/i;
-    sum3 = sum3+s3(i);
-    thr3(i) = sum3/i;
-    
-    if(s1(i) >= thr1(i) + perc*thr1(i) && ...
+    if(s1(i) >= thr1(i)*perc && ... qua si potrebbe riordinare
             next1 == 1 && i > restart && ...
             s1(i)>cost)
         % prev contains the starting point of the edge.
-        prev1 = i;  % salva posizione
-        if(prev1-back>1)    % HELP wut?
+        prev1 = i;
+        if(prev1-back>1)
             prev1=prev1-back;
-            if(prev1+sampleDur<ls)  % se non overflowiamo
+            if(prev1+sampleDur<ls)
                 next1=prev1+sampleDur;
             else
-                next1=1;    % FIXME: inutile, se siamo qui dentro è già 1!
+                next1=1;	% FIXME: inutile, se siamo qui dentro è già 1!
             end
         else
             prev1=1;
@@ -131,7 +127,7 @@ for i = 2:ls
     end
     
     if(ch2)
-        if(s2(i)>=thr2(i)+perc*thr2(i) && next2==1 &&...
+        if(s2(i) >= thr2(i)*perc && next2==1 &&...
                 i>restart && s2(i)>cost)
             
             prev2=i;
@@ -174,7 +170,7 @@ for i = 2:ls
     end
     
     if(ch3)
-        if(s3(i)>=thr3(i)+perc*thr3(i) && next3==1 &&...
+        if(s3(i) >= thr3(i)*perc && next3==1 &&...
                 i>restart && s3(i)>cost)
             
             prev3=i;
@@ -217,17 +213,15 @@ for i = 2:ls
         end
     end
     
-    if s1(i)>max && s1(i)>=thr1(i)+perc*thr1(i)
+    if (s1(i)>max && s1(i)>=thr1(i)*perc)
         max=s1(i);
         choice=1;
     end
-    if s2(i)>max && ch2 && s2(i)>=thr2(i)+...
-            perc*thr2(i)
+    if (ch2 && s2(i)>max && s2(i)>=thr2(i)*perc)
         max=s2(i);
         choice=2;
     end
-    if s3(i)>max && ch3 && s3(i)>=thr3(i)+...
-            perc*thr3(i)
+    if (ch2 && s3(i)>max && ch3 && s3(i)>=thr3(i)*perc)
         max=s3(i);
         choice=3;
     end
