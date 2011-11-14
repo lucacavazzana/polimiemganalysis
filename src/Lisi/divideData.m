@@ -2,9 +2,9 @@ function [p t vp vt tp tt] = divideData(data, movNum ,pperc, vperc, tperc)
 %DIVIDEDATA     Splits data sets
 %
 %   [P T VP VT TP TT] = DIVIDEDATA(DATA, NUMMOV, PPERF, VPERC, TPERC)
-%   splits the DATA sets in: training P, validation VP and testing TP sets
-%   according to PPERC, VPERC and TPERC percentages.
-%      
+%   splits the DATA sets in training P, validation VP and testing TP sets
+%   according to PPERC, VPERC and TPERC percentages, and where NUMMOV is
+%   the number of possible gestures.
 
 %	By Giuseppe Lisi for Politecnico di Milano
 %	beppelisi@gmail.com

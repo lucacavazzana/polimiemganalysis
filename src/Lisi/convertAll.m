@@ -32,6 +32,8 @@
 %%
 function [c movNumber]=convertAll(debug,np,plotting)
 
+% files in posizione .../serial/np/chx/
+
 file=['/Users/giuseppelisi/University/Thesis/'...
     'Matlab/FilesNewEmg/serial/' np '/ch1/*.txt'];
 d = dir(file);

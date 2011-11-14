@@ -11,18 +11,35 @@ DIVIDEDATA: splitta set di movimenti in training, validation e test
 
 EXTRACTFEATURES: dato data, restituisce iemg, mav, e trasf wavelet (ridotta da svd)
 
-FINDBURSTEMG - TUTTO DA RISCRIVERE!
+FINDBURSTEMG - TUTTO DA RISCRIVERE! Un sacco di operazioni inutili
+    analizza in cerca di inizio-fine dei burst
 
+MYNN - cercare parametri usando GA?
+    - DIVIDEDATA
+    - crea NN e la traina (aggiornare funzioni usando le nuove librerie di
+        matlab, quelle usate sono obsolete)
+    - 
 
-
-MYNN
 RECOGNIZE:
     - lancia serialComm per acquisizione segnali
-    -   
+    - f = SPLITFILTER
+    - analizza f con nn ricevuta in ingresso (appositamente addestrata per quel numero di gestures)
+    - restituisce il risultato valutando performance con diversi numeri di getsure
 
-SPLITFILTER
+SPLITFILTER:
+    - splitta e analizza ()
+
 TAKEFEATURES
-TESTNET
+
+TESTNET ************************************+
+    - per REP volte:
+        - traina rete (TRAINING)
+        - aggiorna statistiche
+    - stampa statistiche
+
 TESTWHOLESET
+
 TRAINING
+    
+
 USENN

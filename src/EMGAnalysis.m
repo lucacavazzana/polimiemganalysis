@@ -5,7 +5,7 @@
 % luca.cavazzana@gmail.com
 % FIXME: update
 
-global port;
+global PORT;
 
 % MY DEBUG VALUES
 global DEBUG;
@@ -13,17 +13,17 @@ DEBUG = 1;
 
 if DEBUG
     if(ispc())
-        port = 'COM3';
+        PORT = 'COM3';
     else
-        port = 'TTY...';
+        PORT = 'TTY...';
     end
 else
     
-    port = portGUI();
+    PORT = portGUI();
     
 end
 
 patient = 'tizioLosco';
 gesture = 'mano';
 
-acquireData(paziente, gesture, 0, 1, port);
+acquireData(paziente, gesture, 0, 1, PORT);
