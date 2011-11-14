@@ -6,12 +6,15 @@ ACQUIREDATA: acquisisce il singolo movimento
 CONVERTALL: chiama CONVERTFILE2MAT per convertire canali, restituisce matriciona
 CONERTFILE2MAT: converte txt into mat
 
+(ottimizzabile:)
 DIVIDEDATA: splitta set di movimenti in training, validation e test
 
 EXTRACTFEATURES: dato data, restituisce iemg, mav, e trasf wavelet (ridotta da svd)
-ottimizzata
 
-FINDBURSTEMG
+FINDBURSTEMG - TUTTO DA RISCRIVERE!
+
+
+
 MYNN
 RECOGNIZE:
     - lancia serialComm per acquisizione segnali
