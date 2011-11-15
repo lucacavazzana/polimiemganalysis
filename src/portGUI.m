@@ -1,11 +1,11 @@
 function port = portGUI
 %PORTGUI	Returns the selected serial port
-%   PORTGUI launches selection graphical interface for serial port
-%   selection. Returns string of the selected port.
+%	PORTGUI launches selection graphical interface for serial port
+%	selection. Returns string of the selected port.
 
-% By Luca Cavazzana for Politecnico di Milano
-% luca.cavazzana@gmail.com
-% 13 November 2011
+%	By Luca Cavazzana for Politecnico di Milano
+%	luca.cavazzana@gmail.com
+%	13 November 2011
 
 
 if(ispc())

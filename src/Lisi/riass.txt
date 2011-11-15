@@ -3,7 +3,7 @@ ACQUIREDATA: acquisisce il singolo movimento
     - carica i segnali e li dà in pasto a SPLITFILTER
 
 - inutili se passiamo a pipe:
-CONVERTALL: chiama CONVERTFILE2MAT per convertire canali, restituisce matriciona
+CONVERTALL: chiama CONVERTFILE2MAT per convertire canali. Restituisce matriciona con dati più il numero di movimenti acquisiti
 CONERTFILE2MAT: converte txt into mat
 
 (ottimizzabile:)

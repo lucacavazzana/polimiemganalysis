@@ -1,6 +1,7 @@
 function acquireData(np, mov, id, prog)
+
 %ACQUIREDATA    Acquires data from the EMG board.
-%   ACQUIREDATA calls an external application written in C, which starts
+%	ACQUIREDATA calls an external application written in C, which starts
 %   the communication with the board and saves the signals into different
 %   folders. This script actually load the data stored into the folders
 %   created by the C application.

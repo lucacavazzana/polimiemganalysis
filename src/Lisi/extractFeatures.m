@@ -4,9 +4,9 @@ function f = extractFeatures(data)
 %	absolute mean value, wavelet coefficients after SVD) of the burst
 %	dataset D.
 
-% By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
-% luca.cavazzana@gmail.com, beppelisi@gmail.com
-% 9 November 2011
+%	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+%	luca.cavazzana@gmail.com, beppelisi@gmail.com
+%	9 November 2011
 
 % Wavelet Coefficient + SVD
 w = svd(cwt(data,1:5,'morl'));

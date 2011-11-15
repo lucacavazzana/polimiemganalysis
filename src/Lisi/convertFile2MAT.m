@@ -1,18 +1,14 @@
-%% ConvertFile2Mat
+function a = convertFile2MAT(file)
 
-% parsa dati: file -> cell. Inutile se passi a pipe.
-
-% This function converts each single txt file in matlab format
+%CONVERTFILE2MAT    Extrat EMG data from file
+%	A = CONVERTFILE2MAT(F) returns the data vector A extracted frome txt
+%	file F.
 %
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
-%% Inputs
-% file: is the file to convert
-%% Outputs
-% a: is the converted matlab file
-%%
-function a=convertFile2MAT(file)
+%   See also CONVERTALL
+
+%	By Giuseppe Lisi for Politecnico di Milano
+%	beppelisi@gmail.com
+%	8 June 2010
 
 fid = fopen(file);
 a = fscanf(fid, '%d', [1 inf])';
