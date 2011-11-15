@@ -1,37 +1,19 @@
-%% Split Filter
-% This script is used to split the incoming signal and to
-% filter it.
-%
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+function f = splitFilter(c, debug, acq, plotting, i, np, ch2, ch3)
+%SPLITFILTER
+%   F = SPLITFILTER(C, DEB, ACQ, PLOT, I, NP, CH2, CH3) takes the Ith
+%   signal in the cell matrix C and returns the feature vector F after
+%   splitting and filetering.
+%   If PLOT is True, saves the graph in the ./NP/img folder.
+%   No clue how CH2 and CH3 works.
+
+%	By Giuseppe Lisi for Politecnico di Milano
+%	beppelisi@gmail.com
+%	8 June 2010
 %% Inputs
-% c: is the cell array containing all the signals in matlab
-% format.
-%
 % debug=1: to pause the segmentation phase and plot the figures
 % of each segemented signal. Debug mode
 %
 % acq=1: if the script is used during the acquisition phase
-%
-% np: (name of the person) is the name of the folder in which
-% are contained the training data.
-%
-% i: is the index representing the current single signal to
-% process.
-%
-% plotting=1: to save the figures of the segmented signals
-% inside the 'img'folder contained inside the np folder.
-% 'img' is automatically created.
-%
-% ch2=1: if the second channel is used.
-%
-% ch3=1: if the third channel is used.
-%% Outputs
-% f: is the cell array containing all the feature vector
-% related to the signal contained in c at the position i.
-%%
-function f=splitFilter(c, debug, acq, plotting, i, np, ch2, ch3)
 
 c1=c{i,1};
 c2=c{i,2};
@@ -71,7 +53,7 @@ if(length(y1)~= 1)
     
     % find the edges of each burst
     [firstDiv,secondDiv]...
-        =findBurstEMG(filt1,filt2,filt3,debug,ch2,ch3);
+        =findBurstEMG(filt1,filt2,filt3,ch2,ch3);
     
     
     %Filtering above 10 Hz
@@ -117,7 +99,7 @@ if(length(y1)~= 1)
         end
         
     end
-    
+
     sum1=filt1(1)*100;
     sum2=filt2(1)*100;
     sum3=filt3(1)*100;
@@ -125,13 +107,13 @@ if(length(y1)~= 1)
     thr2(1)=sum2;
     thr3(1)=sum3;
     % computing the 'splitting threshold' in order to plot it
-    for i=2:length(filt1)
-        sum1=sum1+filt1(i);
-        thr1(i)=sum1/i;
-        sum2=sum2+filt2(i);
-        thr2(i)=sum2/i;
-        sum3=sum3+filt3(i);
-        thr3(i)=sum3/i;
+    for ii=2:length(filt1)
+        sum1=sum1+filt1(ii);
+        thr1(ii)=sum1/ii;
+        sum2=sum2+filt2(ii);
+        thr2(ii)=sum2/ii;
+        sum3=sum3+filt3(ii);
+        thr3(ii)=sum3/ii;
     end
     
     
@@ -209,7 +191,7 @@ if(length(y1)~= 1)
         end
         numberOFMovements=length(firstDiv);
         if(~acq)
-            ginput(1);
+            ginput(1);  % waits for figure to close
             close all;
         end
         
@@ -219,9 +201,13 @@ if(length(y1)~= 1)
     % saving the figures of the fitered and segmented signal
     % into the 'img' folder
     if plotting
-        file2save=['/Users/giuseppelisi/University/Thesis/'...
-            'Matlab/FilesNewEmg/serial/' np '/ch1/img/image'...
-            sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
+        if(ispc())
+            file2save=[np '/ch1/img/image'...
+                sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
+        else
+            file2save=[np '\ch1\img\image'...
+                sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
+        end
         fig = figure('visible','off');
         plot(1:length(filtSign),filtSign,'b');
         axis([0 length(filtSign) -400 400]);
@@ -232,9 +218,7 @@ if(length(y1)~= 1)
         saveas(fig,file2save,'eps');
         
         if ch2
-            file2save=['/Users/giuseppelisi/University/Thesis/'...
-                'Matlab/FilesNewEmg/serial/' np '/ch2/img/image'...
-                sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
+            file2save(lenght(np)+4)='2';
             fig = figure('visible','off');
             plot(1:length(filtSign2),filtSign2,'b');
             axis([0 length(filtSign2) -400 400]);
@@ -247,9 +231,7 @@ if(length(y1)~= 1)
         
         
         if ch3
-            file2save=['/Users/giuseppelisi/University/Thesis/'...
-                'Matlab/FilesNewEmg/serial/' np '/ch3/img/image'...
-                sprintf('%d',nsamp) ' ' sprintf('%d',i) '.eps'];
+            file2save(lenght(np)+4)='3';
             fig = figure('visible','off');
             plot(1:length(filtSign3),filtSign3);
             axis([0 length(filtSign3) -400 400]);

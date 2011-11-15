@@ -1,4 +1,5 @@
-%% TestNet
+function testNet(debug,np,movNum,ch2,ch3,rep)
+%TESTNET
 % this function runs many times the training of different ANN,
 % on different commutations of the training data. This is done
 % in order to understand the average performances of the
@@ -27,7 +28,6 @@
 
 %% Outputs
 %%
-function testNet(debug,np,movNum,ch2,ch3,rep)
 %rep number of repetition
 movSum=zeros(1,movNum);
 errSum=zeros(1,movNum);

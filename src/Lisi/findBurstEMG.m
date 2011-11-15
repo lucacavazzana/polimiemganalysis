@@ -1,5 +1,5 @@
 function [firstDiv, secondDiv] = ...
-    findBurstEMG(s1, s2, s3, debug, ch2, ch3)
+    findBurstEMG(s1, s2, s3, ch2, ch3)
 %FINDBURSTEMG   Finds the edges of each burst
 %   [FIRSTDIV, SECONDDIV] = FINDBURSTEMG(S1, S2, S3)
 %   returns the vector of the starting edge FIRSTDIVISION and ending edge
@@ -10,10 +10,7 @@ function [firstDiv, secondDiv] = ...
 %	beppelisi@gmail.com
 %	8 June 2010
 %% Inputs
-%
-% debug=1: to pause the segmentation phase and plot the figures
-% of each segemented signal. Debug mode
-%
+% TODO: UNDERSTAND HOW THE CH2 CH3 THING WORKS
 % ch2=1: if the second channel is used.
 %
 % ch3=1: if the third channel is used.

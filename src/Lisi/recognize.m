@@ -1,14 +1,14 @@
-function recognize(net, ch2, ch3, mov)
-%RECOGNIZE
-%	this script recognizes new movements, acquired at the moment.
-%	It uses a trained ANN
-%
+function ges = recognize(nn, ch2, ch3, mov)
+%RECOGNIZE  Gesture classification using NN
+%   GES = RECOGNIZE(NN, CH2, CH3, MOV) acquires gesture EMG and returns the
+%   related ID using the nerual network NN. MOV is the number of gestures.
+
 %	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
 %	luca.cavazzana@gmail.com, beppelisi@gmail.com
 %	15 November 2011
 
 % Inputs
-% net: is the trained ANN used for the recognition
+% nn: is the trained ANN used for the recognition
 %
 % mov: is the number of movement types on which the ANN has
 % been trained.
@@ -44,118 +44,24 @@ fclose(fid);
 
 c{1,4}=0;
 
-
-% FIXME: continue to debug from here
-
-
 % extract the feature vectors from the burst contained in the
 % single signal
-f=splitFilter(c,1,0,0,1,'recognize',ch2,ch3)'
+f = splitFilter(c,1,0,0,1,'recognize',ch2,ch3)'
 
 % uses the ANN to reognize the movement performed.
 if(~isempty(f))
-    out = sim(net,f);
-    
+    out = sim(nn,f);
     
     % performance evaluation, depending on the number of movements
     % on which the ANN is trained
-    lout=length(out(1,:));
-    if mov==7
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0 0 0 0 0 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1 0 0 0 0 0]))
-                [status,result] = unix('say open hand','-echo');
-            elseif (eq(y,[0 0 1 0 0 0 0]))
-                [status,result] = unix('say wrist extension','-echo');
-            elseif (eq(y,[0 0 0 1 0 0 0]))
-                [status,result] = unix('say wrist flexion','-echo');
-            elseif (eq(y,[0 0 0 0 1 0 0]))
-                [status,result] = unix('say thumb abduction','-echo');
-            elseif (eq(y,[0 0 0 0 0 1 0]))
-                [status,result] = unix('say thumb opposition','-echo');
-            elseif (eq(y,[0 0 0 0 0 0 1]))
-                [status,result] = unix('say index extension','-echo');
-            end
-        end
-    end
+    lout = length(out(1,:));
     
+    movIDs = 1:mov;
+    ges = zeros(1,mov);
     
-    if mov==6
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0 0 0 0 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1 0 0 0 0]))
-                [status,result] = unix('say open hand','-echo');
-            elseif (eq(y,[0 0 1 0 0 0]))
-                [status,result] = unix('say wrist extension','-echo');
-            elseif (eq(y,[0 0 0 1 0 0]))
-                [status,result] = unix('say wrist flexion','-echo');
-            elseif (eq(y,[0 0 0 0 1 0]))
-                [status,result] = unix('say thumb abduction','-echo');
-            elseif (eq(y,[0 0 0 0 0 1]))
-                [status,result] = unix('say thumb opposition','-echo');
-            end
-        end
-    end
-    
-    if mov==5
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0 0 0 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1 0 0 0]))
-                [status,result] = unix('say open hand','-echo');
-            elseif (eq(y,[0 0 1 0 0]))
-                [status,result] = unix('say wrist extension','-echo');
-            elseif (eq(y,[0 0 0 1 0]))
-                [status,result] = unix('say wrist flexion','-echo');
-            elseif (eq(y,[0 0 0 0 1]))
-                [status,result] = unix('say thumb abduction','-echo');
-            end
-        end
-    end
-    
-    if mov==4
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0 0 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1 0 0]))
-                [status,result] = unix('say open hand','-echo');
-            elseif (eq(y,[0 0 1 0]))
-                [status,result] = unix('say wrist extension','-echo');
-            elseif (eq(y,[0 0 0 1]))
-                [status,result] = unix('say wrist flexion','-echo');
-            end
-        end
-    end
-    
-    if mov==3
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1 0]))
-                [status,result] = unix('say open hand','-echo');
-            elseif (eq(y,[0 0 1]))
-                [status,result] = unix('say wrist extension','-echo');
-                
-            end
-        end
-    end
-    
-    if mov==2
-        for i=1:lout
-            y= ismember(out(:,i),max(out(:,i)))'
-            if(eq(y,[1 0]))
-                [status,result] = unix('say close hand','-echo');
-            elseif (eq(y,[0 1]))
-                [status,result] = unix('say open hand','-echo');
-            end
-        end
+    for i = 1:lout
+        ges(i) = max(out(:,i));
+        printf('- Gesture %d', ges(i));
     end
     
 end

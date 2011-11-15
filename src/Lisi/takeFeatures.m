@@ -33,8 +33,8 @@ feat = cell(nsamp, 2);
 
 for i=1:nsamp
     % each signal in the cell array is segmented and filtered
-    f=splitFilter(c,debug,0,plotting,i,np,ch2,ch3);
-    feat{i,1}=f;
+    f = splitFilter(c,debug,0,plotting,i,np,ch2,ch3);
+    feat{i,1} = f;
     feat{i,2}=c{i,4};
 end
 
