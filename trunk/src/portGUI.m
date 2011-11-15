@@ -48,8 +48,6 @@ end
 drawnow;
 uiwait;
 
-port = ports{6};
-
 close(f);
 
 
