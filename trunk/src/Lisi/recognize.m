@@ -1,53 +1,52 @@
-%% Recognize
-% this script recognizes new movements, acquired at the moment.
-% It uses a trained ANN
+function recognize(net, ch2, ch3, mov)
+%RECOGNIZE
+%	this script recognizes new movements, acquired at the moment.
+%	It uses a trained ANN
 %
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+%	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+%	luca.cavazzana@gmail.com, beppelisi@gmail.com
+%	15 November 2011
 
-%% Inputs
+% Inputs
 % net: is the trained ANN used for the recognition
 %
 % mov: is the number of movement types on which the ANN has
 % been trained.
 
-%% Outputs
-%%
-function recognize(net,ch2,ch3,mov)
-
 close all;
-comm=['./serialComm recognize 1 1 1']
-[status,result] = unix(comm,'-echo');
+global SERIALCOMM;
+global DEBUG;
+global PORT;
+
+%[status,result] = system([SERIALCOMM ' -a -p rec -i 1 -s 1']);
 c = cell(1, 4);
 
-file=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-    'FilesNewEmg/serial/recognize/ch1/1-1-1.txt'];
+if(ispc())
+    file = 'rec\ch1\1-1.txt';
+else
+    file = 'rec/ch1/1-1.txt';
+end
 
+% scanning files
 fid = fopen(file);
 c{1,1} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
 
-
-file=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-    'FilesNewEmg/serial/recognize/ch2/1-1-1.txt'];
-
+file(7) = '2';
 fid = fopen(file);
 c{1,2} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
 
-
-file=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-    'FilesNewEmg/serial/recognize/ch3/1-1-1.txt'];
-
+file(7) = '3';
 fid = fopen(file);
 c{1,3} = fscanf(fid, '%d', [1 inf])';
-
 fclose(fid);
 
 c{1,4}=0;
+
+
+% FIXME: continue to debug from here
+
 
 % extract the feature vectors from the burst contained in the
 % single signal

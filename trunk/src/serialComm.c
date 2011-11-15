@@ -19,6 +19,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <conio.h>
 #else
 // linux headers here
 #endif
@@ -39,10 +40,12 @@ int main (int argc, char** argv){
 	char HELPTXT[] =  "help text\n"	// FIXME
 			"	-h:	print help\n"
 			"	-v:	verbose\n"
-			"	-d:	input port (default: COM6 or TTY...)\n"
-			"	-n:	# of acquisitions to save\n"
-			"	-p:	root path to save output files\n"
-			"	-g:	gesture name\n";
+			"	-d:	set input port (default: COM6 or TTY...)\n"
+			"	-a:	acquisition mode\n"
+			"	-p:	set root folder to save output files (patient name) (acq mode)\n"
+			"	-g:	set gesture name (acq mode)\n"
+			"	-i:	set gesture ID (acq mode)\n"
+			"	-s: sequence number (acq mode)\n";
 
 	HANDLE hSer;	// handle serial port
 	char rBuff[BUFF_SIZE] = {'0'};	// read buffer
@@ -64,19 +67,20 @@ int main (int argc, char** argv){
 #else
 	char *port = "TTY";	// FIXME: default port name (my default port is ...)
 #endif
-	int nAcq = 0;
-	char* outPath = NULL;
+	char acq = 0;
+	char* patient = NULL;
 	char* gestName = NULL;
+	int gestID = -1;
+	int seq = -1;
 
 	char* filePath = NULL;
 
 	// options parsing -------------------------------------
 	int c;
-	while ((c = getopt (argc, argv, "vhd:n:o:g:")) != -1) {
+	while ((c = getopt (argc, argv, "vhd:ap:g:i:s:")) != -1) {
 		switch(c) {
 		case 'd':
 			port = optarg;
-			printf("- port  '%s' set\n", port);
 			break;
 		case 'h':
 			printf(HELPTXT);
@@ -85,48 +89,111 @@ int main (int argc, char** argv){
 		case 'v':
 			verb = 1;
 			break;
-		case 'n':
-			nAcq = atoi((char*)optarg);
+		case 'a':
+			acq = 1;
 			break;
-		case 'o':
-			outPath = optarg;
-			printf("- writing output into '%s' folder\n", outPath);
-			// TODO: check folder
+		case 'p':
+			patient = optarg;
 			break;
 		case 'g':
 			gestName = optarg;
 			break;
+		case 'i':
+			sscanf(optarg, "%d", &gestID);
+			break;
+		case 's':
+			sscanf(optarg, "%d", &seq);
+			break;
 		case '?':
 			printf("See help for more info\n");
-			return 0;
+			return -1;
 		default:
 			abort();
 		}
 	}
 
-	// checking parameters
-	if(nAcq && !outPath) {
-		printf("\nERROR: specify the output path to save data\n");
-		exit(-1);
+	if(verb) {
+		printf("- port '%s' set\n", port);
+		fflush(stdout);
 	}
 
-	/***************************************************************************
-	 ******    initialize output streams    ************************************
-	 **************************************************************************/
-	if(nAcq) {	// files
+	if(acq) {	// if in acquisition mode
 
-		if(mkdir(outPath)) {
-			if(errno == EEXIST) {
-				printf("WARNING: '%s' folder already exists\n", outPath);
-			} else {
-				printf("ERROR: could not create '%s' folder \n", outPath);
-				exit(-1);
-			}
+		// checking parameters
+		if(!patient) {
+			printf("\nERROR: specify root folder / patient name ID\n");
+			exit(-1);
 		}
 
+		if(gestID<0) {
+			printf("\nERROR: specify gesture ID\n");
+			exit(-1);
+		}
+
+		if(seq<0) {
+			printf("\nERROR: specify sequence number\n");
+			exit(-1);
+		}
+
+		if(verb){
+			printf("- writing output into '%s' folder\n", patient);
+			fflush(stdout);
+		}
+
+		/***********************************************************************
+		 ******    initialize output streams    ********************************
+		 **********************************************************************/
+
+
+		if(mkdir(patient)) {
+			if(errno != EEXIST) {
+				printf("ERROR: could not create '%s' folder \n", patient);
+				exit(-1);
+			} //else
+				//printf("WARNING: '%s' folder already exists\n", patient);
+		}
+
+		filePath = malloc(sizeof(char)*(strlen(patient) +
+				(gestName?strlen(gestName):0) + 12));
+
+		strcpy(filePath, patient);
+#ifdef _WIN32
+		strcat(filePath, "\\ch1");
+#else
+		strcat(filePath, "/ch1");
+#endif
+
+		do {
+			if(mkdir(filePath)) {
+				if(errno != EEXIST) {
+					printf("ERROR: could not create '%s' folder \n", filePath);
+					exit(-1);
+				} //else
+					//printf("WARNING: '%s' folder already exists\n", filePath);
+			}
+		} while(++filePath[strlen(patient)+3]!='4');
+
+		filePath[strlen(patient)+3]='1';
+#ifdef _WIN32
+		strcat(filePath, "\\");
+#else
+		strcat(filePath, "/");
+#endif
 		if(gestName) {
-			filePath = malloc(sizeof(char)*(strlen(outPath)+strlen(gestName)+10));
-			strcpy(filePath, outPath);
+			sprintf(filePath+strlen(patient)+5, "%d-%d-%s.txt", gestID, seq, gestName);
+		} else {
+			sprintf(filePath+strlen(patient)+5, "%d-%d.txt", gestID, seq);
+		}
+
+		ch1 = fopen(filePath, "w");
+		filePath[strlen(patient)+3]++;
+		ch2 = fopen(filePath, "w");
+		filePath[strlen(patient)+3]++;
+		ch3 = fopen(filePath, "w");
+
+		/* if(gestName) {
+			filePath = malloc(sizeof(char)*(strlen(patient)+strlen(gestName)+10));
+			strcpy(filePath, patient);
 #ifdef _WIN32
 			strcat(filePath, "\\");
 #else
@@ -139,8 +206,8 @@ int main (int argc, char** argv){
 				exit(-1);
 			}
 		} else {
-			filePath = malloc(sizeof(char)*(strlen(outPath)+10));
-			strcpy(filePath, outPath);
+			filePath = malloc(sizeof(char)*(strlen(patient)+10));
+			strcpy(filePath, patient);
 		}
 
 #ifdef _WIN32
@@ -153,7 +220,8 @@ int main (int argc, char** argv){
 		filePath[strlen(filePath)-5] = '2';
 		ch2 = fopen(filePath, "w");
 		filePath[strlen(filePath)-5] = '3';
-		ch3 = fopen(filePath, "w");
+		ch3 = fopen(filePath, "w"); */
+
 		if(!(ch1 && ch2 && ch3)) {
 			printf("ERROR: could not open output files\n");
 			exit(-1);
@@ -220,30 +288,45 @@ int main (int argc, char** argv){
 		ERRBOX("Error occurred setting timeouts");
 	}
 
-	if(verb)
-		printf("Serial port opened\n");
-
-	printf("Starting acquisition\n");
+	if(verb) {
+		printf("Serial port opened\n"
+				"Starting acquisition\n");
+	}
 
 	/***************************************************************************
 	 *****    ACQUISITION    ***************************************************
 	 **************************************************************************/
-	while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
 
-		// managing input
-		parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
-
-		// counting acquisitions
-		if(nAcq) {
-			if(sets > ACQ_SIZE) {
-				if(verb)
-					printf("Acq %d completed\n", nAcq);
-				sets = 0;
-			}
-			if (--nAcq == 1)
-				break;
+	if(acq) {
+		printf("Starting acquisition\n");
+		for(c=3;c!=0;c--) {
+			printf("%d...\n",c);
+			fflush(stdout);
+#ifdef _WIN32
+			Sleep(1000);
+#else
+			sleep(1);
+#endif
 		}
-	}	// end parsing WHILE
+		printf("Start!\n");
+		fflush(stdout);
+
+		while(sets<1001) {
+			ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL);
+			// managing input
+			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
+		}
+		printf("Acquisition %d complete\n", seq);
+		fflush(stdout);
+
+	} else {
+		while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
+
+			// managing input
+			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
+
+		}	// end parsing WHILE
+	}
 
 
 	// bye bye
@@ -294,7 +377,6 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 			fprintf(ch1, "%d\n", v1);
 			fprintf(ch2, "%d\n", v2);
 			fprintf(ch3, "%d\n", v3);
-			*sets++;
 		}
 
 		*rem = 0;
@@ -346,7 +428,7 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 				fprintf(ch1, "%d\n", v1);
 				fprintf(ch2, "%d\n", v2);
 				fprintf(ch3, "%d\n", v3);
-				*sets++;
+				(*sets)++;
 			}
 
 			i = j;

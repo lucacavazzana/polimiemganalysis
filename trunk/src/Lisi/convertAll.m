@@ -1,84 +1,72 @@
-%% Convert All
-
-% parsa dati: file -> cell. Inutile se passi a pipe.
-
-% This function converts all the txt files into the matlab
-% format.
-% Future users have to replace
-% /Users/giuseppelisi/University/...
-%   Thesis/Matlab/FilesNewEmg/serial/
-% with their own favourite folder
-% Remember that this code is run on a uinix based machine,
-% therefore it is
-% important to modify some OS oriented commands.
+function [c movNumber] = convertAll(np,plotting)
+%CONVERTALL     Gets datas from folder
+%	[C MOVNUMBER] = CONVERTALL(FOLDER) returns a cell-array containing the
+%	data sets parsed from the files in FOLDER and the number of different
+%	gestures MOVNUMBER.
 %
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+%   See also CONVERTFILE2MAT
 
-%% Inputs
-% debug=1: to pause the segmentation phase and plot the figures
-% of each segemented signal. Debug mode
-%
-% np: is the name of the folder in which are contained the
-% training data.
-%
-% plotting=1: to save the figures of the segmented signals
-% inside the 'img' folder contained inside the np folder. 'img'
-% is automatically created.
-%
-%% Outputs
-% c: is the cell array containing the converted data.
-%%
-function [c movNumber]=convertAll(debug,np,plotting)
+%	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+%	luca.cavazzana@gmail.com, beppelisi@gmail.com
+%	14 November 2011
 
-% files in posizione .../serial/np/chx/
-
-file=['/Users/giuseppelisi/University/Thesis/'...
-    'Matlab/FilesNewEmg/serial/' np '/ch1/*.txt'];
-d = dir(file);
-
-fileIndex = find(~[d.isdir]);
-len=length(fileIndex);
+% .../np/chx/#mov-#sequence[-movName].txt
+if(ispc())
+    file=[np '\ch1\*.txt'];
+else
+    file=[np '/ch1/*.txt'];
+end
+files = dir(file);
+%files = files(~[files.isdir]);  % removing directories (useless, since already put *.txt)
+len = length(files);
 c = cell(len, 4);
-movNumber=1;
-movId=[];
-movKey=[];
+movNumber = 0;  % #gestures identified so far
+movId = [];
+%movName = cell(1);
 
+% for each file in the acquisitions folder
+for i = 1:len
 
-
-for i = 1:length(fileIndex)
+    fileName = files(i).name;
+    movement = sscanf(fileName,'%d%*s');    % getting mov number
+    %movName{i} = sscanf    % TODO: parse mov name too, when you have time
+                            % to waste
+    if(ispc())
+        f = [np '\ch1\' fileName];
+    else
+        f = [np '/ch1/' fileName];
+    end
+    data = convertFile2MAT(f);
+    c{i,1} = data;
     
-    fileName = d(fileIndex(i)).name;
-    movement=sscanf(fileName,'%d%*s');
-    f=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-        'FilesNewEmg/serial/' np '/ch1/' fileName];
-    data=convertFile2MAT(f);
-    c{i,1}=data;
-    f=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-        'FilesNewEmg/serial/' np '/ch2/' fileName];
-    data=convertFile2MAT(f);
-    c{i,2}=data;
-    f=['/Users/giuseppelisi/University/Thesis/Matlab/'...
-        'FilesNewEmg/serial/' np '/ch3/' fileName];
-    data=convertFile2MAT(f);
-    c{i,3}=data;
+    if(ispc())
+        f = [np '\ch2\' fileName];
+    else
+        f = [np '/ch2/' fileName];
+    end
+    data = convertFile2MAT(f);
+    c{i,2} = data;
     
-    pos=find(movId==movement);
+    if(ispc())
+        f = [np '\ch3\' fileName];
+    else
+        f = [np '/ch3/' fileName];
+    end
+    data = convertFile2MAT(f);
+    c{i,3} = data;
+    
+    % now saving movement ID
+    pos = find(movId==movement);  % if movement is not yet met
     if(isempty(pos))
         % here the movement IDs are mapped into a key ID in order to
-        % make it possible to use data ordered whith different IDs
+        % make possible to use data ordered whith different IDs
         % inside the folder
-        movId=[movId movement];
-        movKey=[movKey movNumber];
-        c{i,4}=movNumber;
-        movNumber=movNumber+1;
+        movNumber = movNumber+1;
+        movId = [movId movement];   %#ok
+        c{i,4} = movNumber;
     else
-        c{i,4}=movKey(pos);
+        c{i,4} = pos;
     end
 end
-movId
-movKey
-movNumber=movNumber-1;
 
 end

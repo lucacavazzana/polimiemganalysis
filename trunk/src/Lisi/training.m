@@ -38,12 +38,11 @@ close all;
 clc;
 
 % converts data: txt -> matlab
-disp('Converting in matlab format')
-[c movNum]=convertAll(debug,np,plotting);
+[c movNum] = convertAll(np);
 
 % extracts the feature vectors from all the signals contained
 % in the np folder.
-f=takeFeatures(c,debug,plotting,np,ch2,ch3);
+f = takeFeatures(c,debug,plotting,np,ch2,ch3);
 
 if ~isempty(f{1,1})
     %trains an artificial neural network

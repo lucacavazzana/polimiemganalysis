@@ -1,5 +1,5 @@
 function [firstDiv, secondDiv] = ...
-    findBurstEMG(s1, s2, s3, debug, ch2, ch3)
+    findBurstEMG2(s1, s2, s3, debug, ch2, ch3)
 % REWRITING FINDBURSTEMG
 %FINDBURSTEMG   Finds the edges of each burst
 %   [FIRSTDIV, SECONDDIV] = FINDBURSTEMG(S1, S2, S3)
