@@ -18,6 +18,8 @@ function [p t vp vt tp tt] = divideData(data, movNum ,pperc, vperc, tperc)
 %   tp  test set
 %   tt  target of the test set
 
+% TODO: riguardami
+
 f = cell(movNum,1);
 targ = cell(movNum,1);
 nsamp = size(data, 1);

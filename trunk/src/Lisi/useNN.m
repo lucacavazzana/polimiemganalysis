@@ -1,4 +1,6 @@
-%% UseNN
+function [movementsDone,errorOnTheMovementsDone,performance] = ...
+    useNN(feat,movNum,net)
+%USENN
 % this fucntion only uses an already trained ANN, and computes
 % the performances.
 % The difference with myNN is that useNN doens't train the ANN.
@@ -26,13 +28,10 @@
 % during the test phase
 %
 % performance: is the training performance achived
-%%
-function [movementsDone,errorOnTheMovementsDone,performance]...
-    =useNN(feat,movNum,net)
 
-[p t vp vt tp tt]=divideData(feat,movNum,0,0,1);
+[p t vp vt tp tt] = divideData(feat,movNum,0,0,1);
 
-out = sim(net,tp);
+out = sim(net, tp);
 
 lout=length(out(1,:));
 

@@ -1,3 +1,4 @@
+function feat=takeFeatures(c,plotting,np,ch2,ch3)
 %% TakeFeatures
 % This function extracts the feature vectors from all the
 % signals contained in the np folder.
@@ -9,9 +10,6 @@
 %% Inputs
 % c: is the cell array containing all the singals converted in
 % matlab format.
-%
-% debug=1: to pause the segmentation phase and plot the figures
-% of each segemented signal. Debug mode
 %
 % np: (name of the person) is the name of the folder in which
 % are contained the training data.
@@ -26,14 +24,15 @@
 %% Outputs
 % feat: is the cell array containing the feature vectors and
 % the corresponding target vecors of the signals.
-%%
-function feat=takeFeatures(c,debug,plotting,np,ch2,ch3)
+
+% FIXME: sistemare questa funzione
+
 nsamp=size(c,1);
 feat = cell(nsamp, 2);
 
 for i=1:nsamp
     % each signal in the cell array is segmented and filtered
-    f = splitFilter(c,debug,0,plotting,i,np,ch2,ch3);
+    f = splitFilter(c,0,plotting,i,np,ch2,ch3);
     feat{i,1} = f;
     feat{i,2}=c{i,4};
 end
