@@ -68,5 +68,5 @@ for i = 1:len
         c{i,4} = pos;
     end
 end
-
+    % TODO: aggiungi load del mat file
 end

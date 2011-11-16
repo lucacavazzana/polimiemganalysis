@@ -1,14 +1,12 @@
-%% TestWholeSet
+function [mov,err,perf] = testWholeSet(np, plotting, ch2, ch3, net)
+%TESTWHOLESET
 % This function is used to test a trained ANN on a whole data
-%set, contained in the folder np.
+% set, contained in the folder np.
 %
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+%	By Giuseppe Lisi for Politecnico di Milano
+%	beppelisi@gmail.com
+%	8 June 2010
 %% Inputs
-%
-% debug=1: to pause the segmentation phase and plot the figures
-% of each segemented signal. Debug mode
 %
 % np: (name of the person) is the name of the folder in which
 % are contained the training data.
@@ -32,20 +30,18 @@
 %
 % perf: is the training performance achived
 %%
-function [mov,err,perf]=...
-    testWholeSet(debug,np,plotting,ch2,ch3,net)
 close all;
 clc;
 
 % Converts data: txt -> matlab
 disp('Converting in matlab format');
-c = convertAll(debug,np,plotting);
+c = convertAll(np,plotting);
 
 % finds the size of the output vector
 movNum=net.outputs{2}.processedSize;
 
 % extract feature vectors from data contained in the np folder
-f=takeFeatures(c,debug,plotting,np,ch2,ch3);
+f=takeFeatures(c,plotting,np,ch2,ch3);
 
 % uses the trained ANN
 if ~isempty(f{1,1})

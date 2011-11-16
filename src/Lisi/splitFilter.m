@@ -1,4 +1,4 @@
-function f = splitFilter(c, debug, acq, plotting, i, np, ch2, ch3)
+function f = splitFilter(c, acq, plotting, i, np, ch2, ch3)
 %SPLITFILTER
 %   F = SPLITFILTER(C, DEB, ACQ, PLOT, I, NP, CH2, CH3) takes the Ith
 %   signal in the cell matrix C and returns the feature vector F after
@@ -10,10 +10,14 @@ function f = splitFilter(c, debug, acq, plotting, i, np, ch2, ch3)
 %	beppelisi@gmail.com
 %	8 June 2010
 %% Inputs
-% debug=1: to pause the segmentation phase and plot the figures
+% global DEBUG =1: to pause the segmentation phase and plot the figures
 % of each segemented signal. Debug mode
 %
 % acq=1: if the script is used during the acquisition phase
+
+% FIXME: rivedere questa funzione
+
+global DEBUG;
 
 c1=c{i,1};
 c2=c{i,2};
@@ -118,7 +122,7 @@ if(length(y1)~= 1)
     
     
     
-    if debug
+    if DEBUG
         % Plots the segmentation of the envelope of the first
         % channel.
         figure;

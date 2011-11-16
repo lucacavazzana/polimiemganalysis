@@ -1,38 +1,19 @@
-%% MyNN
-% This function trains and simulates an artificial neural
-% network
-%
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+function [net, movDone, errOnMov, perf] = ...
+    myNN(feat ,movNum)
+%MYNN   Trains a NN for gestures recognition
+%   [NET, MOVDONE, ERRONMOV, PERF] = MYNN(F, MOVNUM) trains and simulates
+%   an artificial neural network, where F are the features and MOVNUM the
+%   number of movements. Returns the trained net NET and the number of
+%   movements performed during the test phase MOVDONE, the relative error
+%   ERRONMOV and the performance evaluation PERF.
 
-%% Inputs
-% feat: is the cell array containing the feature vectors
-% and the
-% corresponding target vecors of the signals.
-%
-% movNum: is the number of movement types (7 in this thesis)
-
-%% Outputs
-%
-% net: is the trained artificial neural network
-%
-% movementDone: is the vector containing the number of movement
-% performed during the
-% test phase
-%
-% errorOnTheMovementDone: is the vector containing the errors
-% during the test phase
-%
-% performance: is the training performance achived
-%%
-function ...
-    [net,movementsDone,errorOnTheMovementsDone,performance]...
-    =myNN(feat,movNum)
+%	By Giuseppe Lisi for Politecnico di Milano
+%	beppelisi@gmail.com
+%	8 June 2010
 
 % divide the incoming data into Training, Validation and Test
 % sets.
-[p t vp vt tp tt]=divideData(feat,movNum,3/5,1/5,1/5);
+[p t vp vt tp tt] = divideData(feat,movNum,3/5,1/5,1/5);
 
 % create the ANN
 net=newff(p,t,35);
@@ -47,6 +28,13 @@ net.trainParam.goal=0.001;
 
 % train the ANN
 net = train(net,p,t,{},{},v);
+
+% no need to compute performances if not asked for
+if(nargout == 1)
+    return;
+end
+
+% FIXME: da qui in poi ridondante con useNN
 
 % simulate the network
 out = sim(net,tp);
@@ -72,8 +60,8 @@ for i=1:ltp
     end
     elements(logical(tt(:,i)))=elements(logical(tt(:,i)))+1;
 end
-movementsDone=elements
-errorOnTheMovementsDone=error
+movDone=elements
+errOnMov=error
 
-performance=good/ltp*100
+perf=good/ltp*100
 end
