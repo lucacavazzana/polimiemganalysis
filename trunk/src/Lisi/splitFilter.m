@@ -4,7 +4,8 @@ function f = splitFilter(c, acq, plotting, i, np, ch2, ch3)
 %   signal in the cell matrix C and returns the feature vector F after
 %   splitting and filetering.
 %   If PLOT is True, saves the graph in the ./NP/img folder.
-%   No clue how CH2 and CH3 works.
+%
+%   CH2 and CH3 tells you to use the relative channels (for debugging)
 
 %	By Giuseppe Lisi for Politecnico di Milano
 %	beppelisi@gmail.com
@@ -19,9 +20,9 @@ function f = splitFilter(c, acq, plotting, i, np, ch2, ch3)
 
 global DEBUG;
 
-c1=c{i,1};
-c2=c{i,2};
-c3=c{i,3};
+c1 = c{i,1};
+c2 = c{i,2};
+c3 = c{i,3};
 nsamp=c{i,4};
 
 % Rectification
@@ -39,11 +40,12 @@ if(length(y1)~= 1)
     
     freqCamp=270; %sampling frequency
     cutOffFreq=2; %cutoff frequency of the low-pass filter
-    nyquistFreq=cutOffFreq/(freqCamp/2);
+    nyquistFreq=cutOffFreq/(freqCamp/2); % <- FIXME serio? ricalcolare tutto ogni volta?
     [b,a]=butter(2,nyquistFreq);
+    
     %filt is the envelope of the rectified signal
     filt1=filter(b,a,y1);
-    filt1=filt1(50:length(filt1));
+    filt1=filt1(50:length(filt1)); % <- FIXME usare direttamente gli indici, invece che perdere tempo riallocando?
     
     
     filt2=filter(b,a,y2);
@@ -62,7 +64,7 @@ if(length(y1)~= 1)
     
     %Filtering above 10 Hz
     cutoffF1=10;
-    nyquistF=cutoffF1/(freqCamp/2);
+    nyquistF=cutoffF1/(freqCamp/2); % FIXME OMG AGAIN!
     [num,den] = butter(2,nyquistF,'high');
     filtS=filter(num,den,c1);
     filtSign=filtS(50:length(filtS));
