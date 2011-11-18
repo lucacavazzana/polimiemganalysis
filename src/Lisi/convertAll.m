@@ -19,7 +19,7 @@ end
 files = dir(file);
 %files = files(~[files.isdir]);  % removing directories (useless, since already put *.txt)
 len = length(files);
-c = cell(len, 4);
+c = cell(len, 4);   % [ch1, ch2, ch3, movID]
 movNumber = 0;  % #gestures identified so far
 movId = [];
 %movName = cell(1);

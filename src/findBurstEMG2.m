@@ -2,13 +2,15 @@ function [firstDiv, secondDiv] = ...
     findBurstEMG2(s1, s2, s3, debug, ch2, ch3)
 % REWRITING FINDBURSTEMG
 %FINDBURSTEMG   Finds the edges of each burst
-%   [FIRSTDIV, SECONDDIV] = FINDBURSTEMG(S1, S2, S3)
+%   [FIRSTDIV, SECONDDIV] = FINDBURSTEMG(S1, S2, S3, debug, ch2, ch3)
 %   returns the vector of the starting edge FIRSTDIVISION and ending edge
 %   SECONDDIVISION of the bursts, where S1, S2 and S3 are the linear
 %   envelope of the signal coming from ch1, ch2 and ch3.
+%
+%   CH2 and CH3 tells you to use the relative channels (for debugging)
 
-%	By Giuseppe Lisi for Politecnico di Milano
-%	beppelisi@gmail.com
+%	By Luca Cavazzana, Giuseppe Lisi for Politecnico di Milano
+%	luca.cavazzana@gmail.com, beppelisi@gmail.com
 %	8 June 2010
 %% Inputs
 %
@@ -20,7 +22,7 @@ function [firstDiv, secondDiv] = ...
 % ch3=1: if the third channel is used.
 %%
 %   calcolato segnale integrale (inizio alzato un po' per evitare falsi
-%   positivi iniziali). 
+%   positivi iniziali).
 
 ls = min([length(s1), length(s2), length(s3)]); % length of the signal
 firstDiv = [];
@@ -56,7 +58,7 @@ next3 = 1;
 % sums for the threshold computation and thresholds
 sum1 = s1(1:ls); sum1(1) = s1(1)*mult;
 sum1 = cumsum(sum1);
-thr1 = sum1./(1:ls);
+thr1 = sum1./(1:ls);    % media mobile
 
 sum2 = s2(1:ls); sum2(1) = s2(1)*mult;
 sum2 = cumsum(sum2);
@@ -77,23 +79,31 @@ choice = 0;
 restart = 0;
 
 % empiric values for the decision to take about the burst
-% start.
-perc = 1.22;
-clos = .05;
+% start (variables replaced in the code by direc values)
+% perc = 1.22;
+% clos = .05;
 
 % burst edges detection
 for i = 2:ls
     
-    if(s1(i) >= thr1(i)*perc && ... qua si potrebbe riordinare
-            next1 == 1 && i > restart && ...
+    
+    % if S way greater moving average
+    % and
+    % and index greater than the last ending edge
+    % and S greather than a fixed value
+    if(s1(i) >= thr1(i)*1.22 && ... qua si potrebbe riordinare
+            next1 == 1 && i>restart && ...
             s1(i)>cost)
-        % prev contains the starting point of the edge.
+        
+        % prev now contains the (supposed) starting point of the edge.
         prev1 = i;
         if(prev1-back>1)
             prev1=prev1-back;
-            if(prev1+sampleDur<ls)
-                next1=prev1+sampleDur;
+            if(prev1+sampleDur<ls)  % FIXME if we have the complete burst. Precalcolare prev1+sampleDur e poi breakkare se >ls.
+                % FIXME anzi, ciclare solo fino a ls-sampleDur.
+                next1 = prev1+sampleDur;
             else
+                % FIXME qui ci starebbe un bel mega-break, dato che qualsiasi analisi successiva risulterebbe comunque troppo corta. Meglio salvare i risultati fin'ora calcolati per evitare di dover ricalcolare tutto da capo quando avremo il chunk successivo a disposizione
                 next1=1;	% FIXME: inutile, se siamo qui dentro è già 1!
             end
         else
@@ -103,10 +113,11 @@ for i = 2:ls
     end
     
     if(i==next1)
-        %if the signal is still high -> delay the closing
-        %of the burst
-        if(s1(i)>thr1(i)-clos*thr1(i))
-            if(next1+delay<ls)
+        % if the signal is still high -> delay the closing
+        % of the burst
+        % FIXME magari non solo il valore puntuale ma la media nell'intorno
+        if(s1(i)>thr1(i)*.95)
+            if(next1+delay<ls)  % vedi su
                 next1=next1+delay;
             else
                 next1=ls;
@@ -127,7 +138,7 @@ for i = 2:ls
     end
     
     if(ch2)
-        if(s2(i) >= thr2(i)*perc && next2==1 &&...
+        if(s2(i) >= thr2(i)*1.22 && next2==1 &&...
                 i>restart && s2(i)>cost)
             
             prev2=i;
@@ -147,7 +158,7 @@ for i = 2:ls
         if(i==next2)
             %if the signal is still high delay -> the closing
             %of the burst
-            if(s2(i)>thr2(i)-clos*thr2(i))
+            if(s2(i)>thr2(i)*.95)
                 if(next2+delay<ls)
                     next2=next2+delay;
                 else
@@ -167,63 +178,69 @@ for i = 2:ls
                 end
             end
         end
-    end
-    
-    if(ch3)
-        if(s3(i) >= thr3(i)*perc && next3==1 &&...
-                i>restart && s3(i)>cost)
-            
-            prev3=i;
-            
-            if(prev3-back>1)
-                prev3=prev3-back;
-                if(prev3+sampleDur<ls)
-                    next3=prev3+sampleDur;
-                else
-                    next3=1;
-                end
-            else
-                prev3=1;
-                next3=1+sampleDur;
-            end
-        end
         
-        if(i==next3)
-            %if the signal is still high -> delay the
-            %closing of the burst
-            if(s3(i)>thr3(i)-clos*thr3(i))
-                if(next3+delay<ls)
-                    next3=next3+delay;
-                else
-                    next3=ls;
-                end
-            else
+        if(ch3)
+            if(s3(i) >= thr3(i)*1.22 && next3==1 &&...
+                    i>restart && s3(i)>cost)
                 
-                if(choice==3)
-                    firstDiv=[firstDiv prev3];
-                    secondDiv=[secondDiv next3];
-                    max=0;
-                    choice3=0;
-                    restart=next3+back;
-                    next1=1;
-                    next2=1;
-                    next3=1;
+                prev3=i;
+                
+                if(prev3-back>1)
+                    prev3=prev3-back;
+                    if(prev3+sampleDur<ls)
+                        next3=prev3+sampleDur;
+                    else
+                        next3=1;
+                    end
+                else
+                    prev3=1;
+                    next3=1+sampleDur;
+                end
+            end
+            
+            if(i==next3)
+                %if the signal is still high -> delay the
+                %closing of the burst
+                if(s3(i)>thr3(i)*.95)
+                    if(next3+delay<ls)
+                        next3=next3+delay;
+                    else
+                        next3=ls;
+                    end
+                else
+                    
+                    if(choice==3)
+                        firstDiv=[firstDiv prev3];
+                        secondDiv=[secondDiv next3];
+                        max=0;
+                        choice3=0;
+                        restart=next3+back;
+                        next1=1;
+                        next2=1;
+                        next3=1;
+                    end
                 end
             end
         end
     end
     
-    if (s1(i)>max && s1(i)>=thr1(i)*perc)
+    % e se si usasse media massima invece che media val massimo?
+    if (s1(i)>max && s1(i)>=thr1(i)*1.22)
         max=s1(i);
         choice=1;
     end
-    if (ch2 && s2(i)>max && s2(i)>=thr2(i)*perc)
-        max=s2(i);
-        choice=2;
-    end
-    if (ch2 && s3(i)>max && ch3 && s3(i)>=thr3(i)*perc)
-        max=s3(i);
-        choice=3;
+    if(ch2)
+        if (s2(i)>max && s2(i)>=thr2(i)*1.22)
+            max=s2(i);
+            choice=2;
+        end
+        
+        if(ch3)
+            if (s3(i)>max && s3(i)>=thr3(i)*1.22)
+                max=s3(i);
+                choice=3;
+            end
+        end
     end
 end
 

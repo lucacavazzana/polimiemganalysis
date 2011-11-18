@@ -1,13 +1,13 @@
-function feat=takeFeatures(c,plotting,np,ch2,ch3)
-%% TakeFeatures
-% This function extracts the feature vectors from all the
-% signals contained in the np folder.
+function feats = takeFeatures(c,plotting,np,ch2,ch3)
+%TAKEFEATURES   Features extraction.
+%	This function extracts the feature vectors from all the
+%	signals contained in the np folder.
 %
-% By Giuseppe Lisi for Politecnico di Milano
-% beppelisi@gmail.com
-% 8 June 2010
+%	By Giuseppe Lisi for Politecnico di Milano
+%	beppelisi@gmail.com
+%	8 June 2010
 
-%% Inputs
+% Inputs
 % c: is the cell array containing all the singals converted in
 % matlab format.
 %
@@ -21,20 +21,19 @@ function feat=takeFeatures(c,plotting,np,ch2,ch3)
 % ch2=1: if the second channel is used.
 %
 % ch3=1: if the third channel is used.
-%% Outputs
+
+% Outputs
 % feat: is the cell array containing the feature vectors and
 % the corresponding target vecors of the signals.
 
-% FIXME: sistemare questa funzione
+nsamp = size(c,1);
+feats = cell(nsamp, 2);
 
-nsamp=size(c,1);
-feat = cell(nsamp, 2);
-
-for i=1:nsamp
+for i = 1:nsamp
     % each signal in the cell array is segmented and filtered
     f = splitFilter(c,0,plotting,i,np,ch2,ch3);
-    feat{i,1} = f;
-    feat{i,2}=c{i,4};
+    feats{i,1} = f;
+    feats{i,2} = c{i,4};
 end
 
 end

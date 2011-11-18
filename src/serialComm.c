@@ -43,8 +43,8 @@ int main (int argc, char** argv){
 			"	-d:	set input port (default: COM6 or TTY...)\n"
 			"	-a:	acquisition mode\n"
 			"	-p:	set root folder to save output files (patient name) (acq mode)\n"
-			"	-g:	set gesture name (acq mode)\n"
 			"	-i:	set gesture ID (acq mode)\n"
+			"	-g:	set gesture name (acq mode)\n"
 			"	-s: sequence number (acq mode)\n";
 
 	HANDLE hSer;	// handle serial port
@@ -147,10 +147,10 @@ int main (int argc, char** argv){
 
 		if(mkdir(patient)) {
 			if(errno != EEXIST) {
-				printf("ERROR: could not create '%s' folder \n", patient);
+				printf("ERROR: could not create '%s' folder\n", patient);
 				exit(-1);
 			} //else
-				//printf("WARNING: '%s' folder already exists\n", patient);
+				//printf("WARNING: '%s' folder already exists (coud overwrite data)\n", patient);
 		}
 
 		filePath = malloc(sizeof(char)*(strlen(patient) +
@@ -166,7 +166,7 @@ int main (int argc, char** argv){
 		do {
 			if(mkdir(filePath)) {
 				if(errno != EEXIST) {
-					printf("ERROR: could not create '%s' folder \n", filePath);
+					printf("ERROR: could not create '%s' folder\n", filePath);
 					exit(-1);
 				} //else
 					//printf("WARNING: '%s' folder already exists\n", filePath);
@@ -243,11 +243,11 @@ int main (int argc, char** argv){
 
 	if(hSer == INVALID_HANDLE_VALUE) {
 		if(GetLastError() == ERROR_FILE_NOT_FOUND) {
-			printf("Wrong serial port");
+			printf("Wrong serial port\n");
 			//ERRBOX("Wrong serial port");
 		}
 		else {
-			printf("A serial error occurred");
+			printf("A serial error occurred\n");
 			//ERRBOX("A serial error occurred");
 		}
 		exit(-1);
@@ -257,7 +257,7 @@ int main (int argc, char** argv){
 	dcbPars.DCBlength = sizeof(dcbPars);
 
 	if (!GetCommState(hSer, &dcbPars)) {
-		fprintf(stderr, "Error getting serial state");
+		fprintf(stderr, "Error getting serial state\n");
 		ERRBOX("Error getting serial state");
 	}
 
@@ -267,7 +267,7 @@ int main (int argc, char** argv){
 	dcbPars.Parity = NOPARITY;
 
 	if(!SetCommState(hSer, &dcbPars)) {
-		fprintf(stderr, "Error setting serial port state");
+		fprintf(stderr, "Error setting serial port state\n");
 		ERRBOX("Error setting serial port state");
 	}
 
@@ -284,7 +284,7 @@ int main (int argc, char** argv){
 	timeouts.WriteTotalTimeoutMultiplier = 10;
 
 	if(!SetCommTimeouts(hSer, &timeouts)) {
-		fprintf(stderr, "Error occurred setting timeouts");
+		fprintf(stderr, "Error occurred setting timeouts\n");
 		ERRBOX("Error occurred setting timeouts");
 	}
 
@@ -299,6 +299,7 @@ int main (int argc, char** argv){
 
 	if(acq) {
 		printf("Starting acquisition\n");
+		fflush(stdout);
 		for(c=3;c!=0;c--) {
 			printf("%d...\n",c);
 			fflush(stdout);
