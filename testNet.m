@@ -1,5 +1,4 @@
-function testNet(np, movNum, ch2, ch3, rep)
-%TESTNET
+%% TestNet
 % this function runs many times the training of different ANN,
 % on different commutations of the training data. This is done
 % in order to understand the average performances of the
@@ -28,6 +27,7 @@ function testNet(np, movNum, ch2, ch3, rep)
 
 %% Outputs
 %%
+function testNet(debug,np,movNum,ch2,ch3,rep)
 %rep number of repetition
 movSum=zeros(1,movNum);
 errSum=zeros(1,movNum);
@@ -36,11 +36,7 @@ perform=0;
 
 for i=1:rep
     
-    % FIXME: parte di estrazione delle features avviene per ogni lancio di
-    % training, appesantendo... estrarre le features in una funzione
-    % apposta una volta per tutte e poi darle in pasto ai vari trainer di
-    % NN
-    [net,mov,err,perf]=training(np,0,ch2,ch3);
+    [net,mov,err,perf]=training(debug,np,0,ch2,ch3);
     movSum=movSum+mov;
     errSum=errSum+err;
     perform=perform+perf;
