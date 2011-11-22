@@ -49,6 +49,8 @@ fclose(fid);
 
 c{1,4}=0;
 
+return;
+
 % extract the feature vectors from the burst contained in the
 % single signal
 f = splitFilter(c,1,0,0,1,'recognize',ch2,ch3)'

@@ -1,4 +1,4 @@
-function f = splitFilter(c, acq, saveImgs, i, np, ch2, ch3)
+function f = splitFilter2(c, acq, saveImgs, i, np, ch2, ch3)
 %SPLITFILTER
 %   F = SPLITFILTER(C, DEB, ACQ, SAVEIMGS, I, NP, CH2, CH3) takes the Ith
 %   signal in the cell matrix C and returns the feature vector F after

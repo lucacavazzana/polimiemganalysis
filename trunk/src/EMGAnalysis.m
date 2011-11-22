@@ -10,37 +10,35 @@ clc;
 
 global PORT;
 global SERIALCOMM;
-global DEBUG;   % comment out here
+global DEBUG;
 DEBUG = 1;
 
 if(ispc())
     SERIALCOMM = 'serialComm.exe';
+    SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe'; % FIXME: remove here
 else
     SERIALCOMM = './serialComm';
+    SERIALCOMM = '/home/luca/work/serialComm\Debug\serialComm'; % FIXME remove here
 end
 
 
-if exist('DEBUG','var')
+if DEBUG
     if(ispc())
-        PORT = 'COM3';
+        PORT = 'COM6';
     else
         PORT = 'TTY...';
-    end
-    if(ispc())
-        SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe';
-    else
-        SERIALCOMM = '/home/luca/work/serialComm\Debug\serialComm';
     end
 else
     
     PORT = portGUI();
-    
+    clc;
 end
 
 sel = input(['What do you wanna do with your life?\n' ...
     '1- acquisition\n' ...
     '2- train whatever\n' ...
-    '3- I wanna rock!\n']);
+    '3- recognize\n' ...
+    '4- I wanna rock!\n']);
 
 if(sel == 1)
     farmData();
