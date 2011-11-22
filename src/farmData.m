@@ -8,41 +8,28 @@ function farmData()
 %	luca.cavazzana@gmail.com
 %	FIXME: update
 
-clc;
-
 global PORT;
 global SERIALCOMM;
 global DEBUG;
 
-if DEBUG-1;
+if DEBUG;
     patient = 'asd';
     nMov = 3;
     nRep = 3;
-    movName = cell(1,nMov);
+    movName = {'closeHand'; ...
+            'openHand'; ...
+            'wristExtension'};
 else
     
-    % place the GUI here
-    
-    while(~exist('patient','var')|| isempty(patient))
+    while(~exist('patient','var') || isempty(patient))
         patient = input('Insert patient name:\n','s');
     end
     
-    if(7==exist(patient,'dir'))
-       fprintf(' - WARNING: %s folder already exists, could overwrite data\n', patient);
+    if(exist(patient,'dir') == 7)
+        fprintf(' - WARNING: %s folder already exists, could overwrite data\n', patient);
     end
     
     [nMov movName] = gestGUI();
-%     nMov = input('Number of movements:\n');
-%     while(isempty(nMov) || nMov<2)
-%         nMov = input('Need at least 2 movements:\n');
-%     end
-%     movName = cell(1,nMov);
-%     for i  = 1:nMov
-%         movName{i} = input(sprintf('Movement %d name (optional):\n', i), 's');
-%         if(isempty(movName{i}))
-%             break;
-%         end
-%     end
     
     nRep = input('Number of repetition per movement:\n');
     while(isempty(nRep) || nRep<3)
@@ -57,7 +44,7 @@ gest = cell(nMov,3);    % {ID, movname, nRep}
 
 for m = 1:nMov
     disp('-----------------');
-    fprintf('Gesture %d/%d:\n', m, nMov);
+    fprintf('Gesture %d/%d%s:\n', m, nMov, all(size(movName{m}))*[' (' movName{m} ')']);
     for r = 1:nRep
         fprintf('Repetition %d/%d\n', r, nRep);
         ret = system([SERIALCOMM ' -a -p ' patient ' -i ' sprintf('%d', m) ...
@@ -66,6 +53,24 @@ for m = 1:nMov
         
         if(ret~=0)
             error('Problems acquiring from serial');
+        end
+        
+        if DEBUG
+            f = figure;
+            for i = 1:3
+                fid = fopen(sprintf('%s\\ch%d\\%d-%d-%s.txt', patient, i, m, r, movName{m}), 'r');
+                ch = fscanf(fid, '%d', [1 inf]);
+                fclose(fid);
+                subplot(3,1,i);               
+                plot(ch);
+                axis([0, length(ch), minmax(ch)]);
+            end
+            disp('Press a key to continue');
+            pause();
+            try
+                close(f);
+            catch e
+            end
         end
         
         gest(m,:) = {m, movName{m}, nRep};

@@ -10,6 +10,9 @@
  * Wrote merging the code of Luigi Seregni (Win version) and Giuseppe Lisi (OsX
  * version).
  *
+ * The more I work on this code the messier it becomes... one day I'll refactor
+ * I promise...
+ *
  * Last update:   Nov 9, 2011
  */
 #include <stdio.h>
@@ -33,7 +36,8 @@
 #define ACQ_SIZE 1000	// single acquisition size
 
 void parse(char buff[], DWORD* bRead, unsigned long* sets,
-		FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem);
+		FILE* ch1, FILE* ch2, FILE* ch3, FILE* raw,
+		char *startedFlag, char remBuff[], int *rem);
 
 int main (int argc, char** argv){
 
@@ -59,6 +63,7 @@ int main (int argc, char** argv){
 	unsigned long sets = 0;	//
 
 	FILE *ch1 = NULL, *ch2 = NULL, *ch3 = NULL; // FIXME replace with output handlers
+	FILE *raw = NULL;
 
 	// options
 	char verb = 0;	// verbose
@@ -140,21 +145,20 @@ int main (int argc, char** argv){
 			fflush(stdout);
 		}
 
+
 		/***********************************************************************
-		 ******    initialize output streams    ********************************
+		 ******    INITIALIZE OUTPUT STREAMS    ********************************
 		 **********************************************************************/
-
-
 		if(mkdir(patient)) {
 			if(errno != EEXIST) {
 				printf("ERROR: could not create '%s' folder\n", patient);
 				exit(-1);
 			} //else
-				//printf("WARNING: '%s' folder already exists (coud overwrite data)\n", patient);
+			//	printf("WARNING: '%s' folder already exists (coud overwrite data)\n", patient);
 		}
 
 		filePath = malloc(sizeof(char)*(strlen(patient) +
-				(gestName?strlen(gestName):0) + 12));
+				(gestName?strlen(gestName):0) + 15));
 
 		strcpy(filePath, patient);
 #ifdef _WIN32
@@ -169,9 +173,9 @@ int main (int argc, char** argv){
 					printf("ERROR: could not create '%s' folder\n", filePath);
 					exit(-1);
 				} //else
-					//printf("WARNING: '%s' folder already exists\n", filePath);
+				//	printf("WARNING: '%s' folder already exists\n", filePath);
 			}
-		} while(++filePath[strlen(patient)+3]!='4');
+		} while(++filePath[strlen(patient)+3]!='4');	// ch1, ch2, ch3
 
 		filePath[strlen(patient)+3]='1';
 #ifdef _WIN32
@@ -179,6 +183,7 @@ int main (int argc, char** argv){
 #else
 		strcat(filePath, "/");
 #endif
+
 		if(gestName) {
 			sprintf(filePath+strlen(patient)+5, "%d-%d-%s.txt", gestID, seq, gestName);
 		} else {
@@ -191,6 +196,18 @@ int main (int argc, char** argv){
 		filePath[strlen(patient)+3]++;
 		ch3 = fopen(filePath, "w");
 
+		// raw data file
+		sprintf(filePath+strlen(patient)+1, "raw");
+		mkdir(filePath);
+
+#ifdef _WIN32
+		filePath[strlen(patient)+4] = '\\';
+#else
+		filePath[strlen(patient)+4] = '/';
+#endif
+		raw = fopen(filePath, "w");
+
+		// one-folder-per-gesture version
 		/* if(gestName) {
 			filePath = malloc(sizeof(char)*(strlen(patient)+strlen(gestName)+10));
 			strcpy(filePath, patient);
@@ -222,7 +239,7 @@ int main (int argc, char** argv){
 		filePath[strlen(filePath)-5] = '3';
 		ch3 = fopen(filePath, "w"); */
 
-		if(!(ch1 && ch2 && ch3)) {
+		if(!(ch1 && ch2 && ch3 && raw)) {
 			printf("ERROR: could not open output files\n");
 			exit(-1);
 		}
@@ -231,7 +248,7 @@ int main (int argc, char** argv){
 	}
 
 	/***************************************************************************
-	 ******    initialize input board    ***************************************
+	 ******    INITIALIZE INPUT BOARD    ***************************************
 	 **************************************************************************/
 	hSer = CreateFile(port,
 			GENERIC_READ | GENERIC_WRITE,
@@ -300,8 +317,9 @@ int main (int argc, char** argv){
 	if(acq) {
 		printf("Starting acquisition\n");
 		fflush(stdout);
-		for(c=3;c!=0;c--) {
-			printf("%d...\n",c);
+		WARNBOX("Move after start");
+		for(c=2; c!=0; c--) {
+			printf("%d...\n", c);
 			fflush(stdout);
 #ifdef _WIN32
 			Sleep(1000);
@@ -311,11 +329,13 @@ int main (int argc, char** argv){
 		}
 		printf("Start!\n");
 		fflush(stdout);
+		PurgeComm(hSer, PURGE_TXABORT | PURGE_RXABORT |
+				PURGE_TXCLEAR | PURGE_RXCLEAR);
 
-		while(sets<1001) {
+		while(sets < ACQ_SIZE) {
 			ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL);
 			// managing input
-			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
+			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, raw, &startedFlag, remBuff, &rem);
 		}
 		printf("Acquisition %d complete\n", seq);
 		fflush(stdout);
@@ -324,7 +344,7 @@ int main (int argc, char** argv){
 		while(ReadFile(hSer, rBuff, sizeof(rBuff), &bytesRead, NULL)) {
 
 			// managing input
-			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, &startedFlag, remBuff, &rem);
+			parse(rBuff, &bytesRead, &sets, ch1, ch2, ch3, raw, &startedFlag, remBuff, &rem);
 
 		}	// end parsing WHILE
 	}
@@ -335,13 +355,16 @@ int main (int argc, char** argv){
 	fclose(ch1);
 	fclose(ch2);
 	fclose(ch3);
+	fclose(raw);
 
 	return 0;
 }	// end MAIN
 
 
 void parse(char buff[], DWORD* bRead, unsigned long* sets,
-		FILE* ch1, FILE* ch2, FILE* ch3, char *startedFlag, char remBuff[], int *rem) {
+		FILE* ch1, FILE* ch2, FILE* ch3, FILE* raw,
+		char *startedFlag, char remBuff[], int *rem) {
+
 	int j, i=0;
 	int v1, v2, v3;
 
@@ -362,14 +385,6 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 		memcpy(remBuff+(*rem), buff, i);
 
 		// parsing values
-		/*
-		v1 = atoi(remBuff+2);	// pointing to the first number
-		j=3;
-		while(remBuff[j++]!=' '); // looking for second number
-		v2 = atoi(remBuff+j);
-		while(remBuff[j++]!=' '); // looking for third number
-		v3 = atoi(remBuff+j);
-		 */
 		sscanf(remBuff+2,"%d %d %d", &v1, &v2, &v3);
 
 		// writing output
@@ -378,6 +393,7 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 			fprintf(ch1, "%d\n", v1);
 			fprintf(ch2, "%d\n", v2);
 			fprintf(ch3, "%d\n", v3);
+			fprintf(raw, "D: %d %d %d\n", v1, v2, v3);
 		}
 
 		*rem = 0;
@@ -414,14 +430,6 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 		if(j<((int)(*bRead))){	// found next 'D'
 
 			// parsing values
-			/*
-			i = i+2;	// pointing to the first number
-			v1 = atoi(buff+i);
-			while(buff[i++]!=' '); // looking for second number
-			v2 = atoi(buff+i);
-			while(buff[i++]!=' '); // looking for third number
-			v3 = atoi(buff+i);
-			 */
 			sscanf(buff+i+2,"%d %d %d", &v1, &v2, &v3);
 
 			// writing output
@@ -429,6 +437,7 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 				fprintf(ch1, "%d\n", v1);
 				fprintf(ch2, "%d\n", v2);
 				fprintf(ch3, "%d\n", v3);
+				fprintf(raw, "D: %d %d %d\n", v1, v2, v3);
 				(*sets)++;
 			}
 
