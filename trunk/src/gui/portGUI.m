@@ -14,9 +14,15 @@ else
     ports = {'TTY1','TTY2','TTY3'};
 end
 
-sizeGUI = [200,55];
+sizeGUI = [200,65];
 
-f = figure('Visible','off','Position',[100, 100, sizeGUI]);
+f = figure('Visible', 'off', ...
+    'Name', 'Select port', ...
+    'NumberTitle', 'off', ...
+    'Menubar', 'None', ...
+    'Resize', 'off', ...
+    'Position',[100, 100, sizeGUI]);
+    
 
 hText = uicontrol('Style', 'text', ...
     'String', 'Port' ,'Position', [10, 45, 40, 18]);
@@ -35,8 +41,7 @@ hSelect = uicontrol('Style', 'pushbutton', ...
 %align([hTest, hSelect, hPorts],'Center','None');
 
 movegui(f,'center');
-set(f,'Name','Select port','Menubar','None');
-set(f,'Visible','on');
+set(f, 'Visible','on');
 
 % my default values...
 if(ispc())

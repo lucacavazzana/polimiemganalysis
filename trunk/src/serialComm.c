@@ -33,7 +33,7 @@
 #define ERRBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONERROR | MB_OK )	// find a way to make this box non-blocking
 #define WARNBOX(txt) MessageBox(NULL, TEXT(txt), TEXT(APPNAME), MB_ICONWARNING | MB_OK )
 #define BUFF_SIZE 1000
-#define ACQ_SIZE 1000	// single acquisition size
+#define ACQ_SIZE 540	// single acquisition size
 
 void parse(char buff[], DWORD* bRead, unsigned long* sets,
 		FILE* ch1, FILE* ch2, FILE* ch3, FILE* raw,
