@@ -1,7 +1,8 @@
-function [n, gests] = gestGUI
+function [n, gests, name] = acqGUI
 %GESTGUI    Get gesture names
-%   [N, GESTS] = GEST() displays a graphical interface where the user can
-%   select the number of gestures N and their name GESTS.
+%   [N, GESTS, NAME] = ACQGUI() displays a graphical interface where the
+%   user can select the number of gestures N, their name GESTS and the NAME
+%   of the patient.
 
 %	By Luca Cavazzana for Politecnico di Milano
 %	luca.cavazzana@gmail.com
@@ -17,9 +18,14 @@ gests = {'closeHand', ...
     'thumbOpposition', ...
     'indexExtension'};
 
-sizeGUI = [230,200];
+sizeGUI = [230,210];
 
-f = figure('Visible','off','Position',[100, 100, sizeGUI]);
+f = figure('Visible', 'off', ...
+    'Name', 'Gestures', ...
+    'NumberTitle', 'off', ...
+    'Menubar', 'None', ...
+    'Resize', 'off', ...
+    'Position', [100, 100, sizeGUI]);
 
 hBox = zeros(1,7);
 for i = 1:7
@@ -35,9 +41,13 @@ numBox = uicontrol('Style', 'popupmenu', ...
     'Callback', {@selCallback});
 numLab = uicontrol('Style', 'text', ...
     'String', '#gestures' ,'Position', [130, 65, 80, 18]);
+patLabel = uicontrol('Style', 'text', ...
+    'String', 'Patient name' ,'Position', [120, 190, 100, 15]);
+patBox = uicontrol('Style', 'edit', ...
+    'String', 'asd' ,'Position', [120, 170, 100, 20]);
+
 
 movegui(f,'center');
-set(f,'Name','Select port','Menubar','None');
 set(f,'Visible','on');
 
 drawnow;
@@ -53,8 +63,17 @@ close(f);
     end
 
     function okCallback(source, eventdata)
+        
+        name = get(patBox, 'String');
+        if(isempty(name))
+            disp(' - Warning: insert a patient name');
+            return;
+        end
+        
         n = get(numBox, 'Value')+1;
         gests = get(hBox(1:n), 'String');
         uiresume(gcf);
+
+        
     end
 end

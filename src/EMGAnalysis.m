@@ -18,9 +18,8 @@ if(ispc())
     SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe'; % FIXME: remove here
 else
     SERIALCOMM = './serialComm';
-    SERIALCOMM = '/home/luca/work/serialComm\Debug\serialComm'; % FIXME remove here
+    SERIALCOMM = '/home/luca/work/serialComm/Debug/serialComm'; % FIXME remove here
 end
-
 
 if DEBUG
     if(ispc())
@@ -29,7 +28,6 @@ if DEBUG
         PORT = 'TTY...';
     end
 else
-    
     PORT = portGUI();
     clc;
 end
