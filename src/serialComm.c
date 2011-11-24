@@ -244,7 +244,62 @@ int main (int argc, char** argv){
 			exit(-1);
 		}
 	} else {	// sockets / pipes
+		ch1 = CreateNamedPipe(
+				"\\.\pipe\emgCh1",
+				PIPE_ACCESS_OUTBOUND,
+				PIPE_TYPE_BYTE, // mode
+				1,		// max instances
+				1000,	// out buffSize
+				1000,	// in buffSize
+				0,		// time out
+				NULL);	// security
 
+		ch2 = CreateNamedPipe(
+				"\\.\pipe\emgCh2",
+				PIPE_ACCESS_OUTBOUND,
+				PIPE_TYPE_BYTE, // mode
+				1,		// max instances
+				1000,	// out buffSize
+				1000,	// in buffSize
+				0,		// time out
+				NULL);	// security
+
+		ch3 = CreateNamedPipe(
+				"\\.\pipe\emgCh3",
+				PIPE_ACCESS_OUTBOUND,
+				PIPE_TYPE_BYTE, // mode
+				1,		// max instances
+				1000,	// out buffSize
+				1000,	// in buffSize
+				0,		// time out
+				NULL);	// security
+
+		raw = CreateNamedPipe(
+				"\\.\pipe\emgRaw",
+				PIPE_ACCESS_OUTBOUND,
+				PIPE_TYPE_BYTE, // mode
+				1,		// max instances
+				1000,	// out buffSize
+				1000,	// in buffSize
+				0,		// time out
+				NULL);	// security
+	}
+
+	if(ConnectNamedPipe(ch1, NULL)) {
+		printf("ch1 connected\n");
+		fflush(stdout);
+	}
+	if(ConnectNamedPipe(ch2, NULL)) {
+		printf("ch1 connected\n");
+		fflush(stdout);
+	}
+	if(ConnectNamedPipe(ch3, NULL)) {
+		printf("ch3 connected\n");
+		fflush(stdout);
+	}
+	if(ConnectNamedPipe(raw, NULL)) {
+		printf("raw connected\n");
+		fflush(stdout);
 	}
 
 	/***************************************************************************
@@ -289,16 +344,21 @@ int main (int argc, char** argv){
 	}
 
 	COMMTIMEOUTS timeouts={0};
-	/*timeouts.ReadIntervalTimeout=MAXDWORD;
-	timeouts.ReadTotalTimeoutConstant=0;
-	timeouts.ReadTotalTimeoutMultiplier=0;
-	timeouts.WriteTotalTimeoutConstant=0;
-	timeouts.WriteTotalTimeoutMultiplier=0;*/
-	timeouts.ReadIntervalTimeout = 50;	// TODO: test to find suitable values
-	timeouts.ReadTotalTimeoutConstant = 50;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.WriteTotalTimeoutConstant = 50;
-	timeouts.WriteTotalTimeoutMultiplier = 10;
+	if(acq) {	// if training get the char we need
+		timeouts.ReadIntervalTimeout = 50;	// TODO: test to find suitable values
+		timeouts.ReadTotalTimeoutConstant = 50;
+		timeouts.ReadTotalTimeoutMultiplier = 10;
+		timeouts.WriteTotalTimeoutConstant = 50;
+		timeouts.WriteTotalTimeoutMultiplier = 10;
+	} else {	// if recognizing read sets as soon as they're ready
+		/* FIXME: maybe we're wasting time lock-spinning...
+		 * maybe is better simply to set a little buffer */
+		timeouts.ReadIntervalTimeout = MAXDWORD;
+		timeouts.ReadTotalTimeoutConstant = 0;
+		timeouts.ReadTotalTimeoutMultiplier = 0;
+		timeouts.WriteTotalTimeoutConstant = 0;
+		timeouts.WriteTotalTimeoutMultiplier = 0;
+	}
 
 	if(!SetCommTimeouts(hSer, &timeouts)) {
 		fprintf(stderr, "Error occurred setting timeouts\n");

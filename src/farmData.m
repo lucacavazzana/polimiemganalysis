@@ -43,10 +43,11 @@ seq = 1;
 gest = cell(nMov,3);    % {ID, movname, nRep}
 
 for gID = 1:nMov
-    disp('-----------------');
+    disp('---------------------');
     fprintf('Gesture %d/%d (%s):\n', gID, nMov, movName{gID});
+    disp('---------------------');
     for r = 1:nRep
-        fprintf('Repetition %d/%d\n', r, nRep);
+        fprintf('\n -- Repetition %d/%d -- \n', r, nRep);
         ret = system([SERIALCOMM ' -a -d ' PORT ...
             ' -p ' patient ...
             ' -i ' sprintf('%d', gID) ...
@@ -59,24 +60,9 @@ for gID = 1:nMov
         
         % if true plots the current EMG acqusition
         if PLOT
-            f = figure('NumberTitle', 'off', ...
-                'Name', sprintf('%s %d/%d', movName{gID}, r, nRep));
-            for i = 1:3
-                if(ispc())
-                    file = sprintf('%s\\ch%d\\%d-%d-%s.txt', patient, i, gID, seq, movName{gID});
-                else
-                    file = sprintf('%s/ch%d/%d-%d-%s.txt', patient, i, gID, seq, movName{gID});
-                end
-                fid = fopen(file, 'r');
-                ch = fscanf(fid, '%d', [1 inf]);
-                fclose(fid);
-                subplot(3,1,i);               
-                plot(ch);
-                axis([0, length(ch), minmax(ch)]);
-                ylabel(sprintf('Ch%d',i));
-            end
-
-            drawnow expose;
+            
+            f = plotEmgFile(patient, seq, gID, movName{gID});
+            
             disp('Press a key to continue...');
             pause();
             try
