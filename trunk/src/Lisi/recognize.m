@@ -18,7 +18,7 @@ global SERIALCOMM;
 global DEBUG;
 global PORT;
 
-[status,result] = system([SERIALCOMM ' -a -p rec -i 1 -s 1']);
+[status, result] = system([SERIALCOMM ' -a -d ' PORT ' -p rec -i 1 -s 1']);
 
 if(status)
     error('Problems acquiring from serial');
