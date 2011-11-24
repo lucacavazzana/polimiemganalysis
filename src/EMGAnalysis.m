@@ -27,8 +27,8 @@ if LUCA      % FIXME remove here
         PORT = 'COM6';
         SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe'; % FIXME: remove here
     else
-        PORT = 'TTY...';
-        SERIALCOMM = '/home/luca/work/serialComm/Debug/serialComm';
+        PORT = '/dev/ttyUSB0';
+        SERIALCOMM = '/home/luca/workspace/serialComm/Debug/serialComm';
     end
 else
     
@@ -41,7 +41,8 @@ sel = input(['What do you wanna do with your life?\n' ...
     '1- acquisition\n' ...
     '2- train whatever\n' ...
     '3- recognize\n' ...
-    '4- I wanna rock!\n']);
+    '4- rec online\n' ...
+    '5- I wanna rock!\n']);
 
 if(sel == 1)
     farmData();
@@ -50,6 +51,8 @@ elseif(sel == 2)
 elseif(sel == 3)
     recognize();
 elseif(sel == 4)
+    onlineRecogn();
+elseif(sel == 5)
     web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
 else
     printf('Wrong selection');

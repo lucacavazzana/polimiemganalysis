@@ -11,7 +11,7 @@ function port = portGUI
 if(ispc())
     ports = {'COM1','COM2','COM3','COM4','COM5','COM6'};
 else
-    ports = {'TTY1','TTY2','TTY3'};
+    ports = {'/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2', '/dev/ttyUSB3'};
 end
 
 sizeGUI = [200,65];
@@ -47,7 +47,7 @@ set(f, 'Visible','on');
 if(ispc())
     set(hPorts, 'Value', 6);
 else
-    set(hPorts, 'Value', 6);
+    set(hPorts, 'Value', 1);
 end
 
 drawnow;
@@ -62,7 +62,7 @@ close(f);
         
         try
             disp(['Opening port ' ports{p}]);
-            board = serial(ports{p}, 'BaudRate',57600);
+            board = serial(ports{p}, 'BaudRate', 57600);
             fopen(board);
             disp(fscanf(board));
             
