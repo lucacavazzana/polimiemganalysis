@@ -72,8 +72,7 @@ int main (int argc, char** argv){
 	FILE *ch1 = NULL, *ch2 = NULL, *ch3 = NULL;
 	FILE *raw = NULL;
 
-	int fifo1 = 0, fifo2 = 0, fifo3 = 0;
-	FILE *raw2 = NULL;
+	int fifo1, fifo2, fifo3;
 
 	// options
 	char verb = 0;	// verbose
@@ -207,25 +206,27 @@ int main (int argc, char** argv){
 			printf("ERROR: could not open output files\n");
 			exit(-1);
 		}
+
 	} else {
 
-		ch1 = fdopen("ch1", "w");
-		ch2 = fdopen("ch2", "w");
-		ch3 = fdopen("ch3", "w");
-		raw = fopen("raw", "w");
-		raw2 = fopen("raw2", "w");
+		if(mkfifo("ch1", S_IRUSR | S_IWUSR) == -1 ||
+				mkfifo("ch2", S_IRUSR | S_IWUSR) == -1 ||
+				mkfifo("ch3", S_IRUSR | S_IWUSR) == -1) {
 
-		// creating FIFOs
-		//		fifo1 = mkfifo("ch1", S_IWUSR | S_IRUSR);
-		//		fifo2 = mkfifo("ch2", S_IWUSR | S_IRUSR);
-		//		fifo3 = mkfifo("ch3", S_IWUSR | S_IRUSR);
-		//
-		//		raw = fopen("raw", "w");
-		//
-		//		if(fifo1 == -1 || fifo2 == -1 || fifo3 == -1) {
-		//			printf(" - ERROR: could not create FIFOs\n");
-		//			exit(-1);
-		//		}
+			printf(" - WARNING: FIFOs already exist\n");
+			fflush(stdout);
+		}
+
+		fifo1 = open("ch1", O_WRONLY);
+		fifo2 = open("ch2", O_WRONLY);
+		fifo3 = open("ch3", O_WRONLY);
+
+		raw = fopen("raw.txt", "w");
+		if(!raw){
+			printf(" - WARNING: could not open raw output file\n");
+			fflush(stdout);
+		}
+
 	}
 
 	/***************************************************************************
@@ -259,6 +260,8 @@ int main (int argc, char** argv){
 				"Starting acquisition\n");
 	}
 
+	sets = 0;
+
 	/***************************************************************************
 	 *****    ACQUISITION    ***************************************************
 	 **************************************************************************/
@@ -290,36 +293,44 @@ int main (int argc, char** argv){
 			parseFile(rBuff, bytesRead, &sets, ch1, ch2, ch3, raw,
 					remBuff, &rem);
 		}	// end parsing WHILE
-	}	// end acquisition IF
 
-	else {	// output to FIFOs
 
-		while(1) {
-			bytesRead = read(hSer, rBuff, BUFF_SIZE);
-			if(bytesRead == -1) {
-				printf("An error occurred reading the EMG board\n");
-				exit(-1);
-			}
+		// end acquisition IF
+	} else {
 
-			rBuff[bytesRead] = '\0';
-			fprintf(raw2, "%s", rBuff);
-			fprintf(raw2, "\n---\n");
-			parseFile(rBuff, bytesRead, &sets, ch1, ch2, ch3, raw,
-					remBuff, &rem);
+		/**********************************************************************
+		 *****    RECOGNITION    **********************************************
+		 **********************************************************************/
+
+		//while(1) {
+		bytesRead = read(hSer, rBuff, BUFF_SIZE);
+		if(bytesRead == -1) {
+			printf("An error occurred reading the EMG board\n");
+			exit(-1);
 		}
 
-		fclose(raw);
+		rBuff[bytesRead] = '\0';
+		fprintf(raw, "%s", rBuff);
+		parseFifo(rBuff, bytesRead, &sets, fifo1, fifo2, fifo3,
+				remBuff, &rem);
+		//}
+
 	}
 
 
 	// bye bye
 	if(acq) {
-		close(hSer);
 		fclose(ch1);
 		fclose(ch2);
 		fclose(ch3);
-		fclose(raw);
+	} else {
+		close(fifo1);
+		close(fifo2);
+		close(fifo3);
 	}
+
+	close(hSer);
+	fclose(raw);
 
 	return 0;
 }	// end MAIN
@@ -346,7 +357,7 @@ void parseFile(char buff[], int bRead, unsigned long* sets,
 		*rem += bRead;
 		return;
 	}
-
+	write(ch3, " ", 1);
 	if(*rem) {	// managing remaining chunk from previous acq
 		memcpy(remBuff+(*rem), buff, i);
 
@@ -359,7 +370,7 @@ void parseFile(char buff[], int bRead, unsigned long* sets,
 			fprintf(ch1, "%d\n", v1);
 			fprintf(ch2, "%d\n", v2);
 			fprintf(ch3, "%d\n", v3);
-			//fprintf(raw, "D: %d %d %d\n", v1, v2, v3);
+			(*sets)++;
 		}
 
 		*rem = 0;
@@ -403,7 +414,6 @@ void parseFile(char buff[], int bRead, unsigned long* sets,
 				fprintf(ch1, "%d\n", v1);
 				fprintf(ch2, "%d\n", v2);
 				fprintf(ch3, "%d\n", v3);
-				//fprintf(raw, "D: %d %d %d\n", v1, v2, v3);
 				(*sets)++;
 			}
 
@@ -455,8 +465,18 @@ void parseFifo(char buff[], int bRead, unsigned long* sets,
 	if(*rem) {	// managing remaining chunk from previous acq
 		memcpy(remBuff+(*rem), buff, i);
 
+		j = 3; // first space can't be
+		while(remBuff[j++]!=' ');
+		write(ch1, remBuff+2, j-2);
+		// writing ch2
+		i = j+1;
+		while(remBuff[i++]!=' ');
+		write(ch2, remBuff+j, i-j);
+		j = i+1;
+		while(remBuff[j++]!='\r');
+		write(ch3, remBuff+i, j-i);
 
-
+		(*sets)++;
 		*rem = 0;
 
 #ifdef _PARSEDEBUG
@@ -475,7 +495,7 @@ void parseFifo(char buff[], int bRead, unsigned long* sets,
 #endif
 
 		if(buff[i]=='I'){
-			while(i<(bRead) && buff[i]!='D'){i++;}; // go to D or end buff
+			while(i<bRead && buff[i]!='D'){i++;}; // go to D or end buff
 			if(i == bRead)	// trash this chunk, else we have D-index
 				return;
 		}
@@ -494,7 +514,7 @@ void parseFifo(char buff[], int bRead, unsigned long* sets,
 			// sscanf(buff+i+2,"%d %d %d", &v1, &v2, &v3);
 
 			// writing ch1
-			i = i+2;
+			i += 2;
 			j = i+1;
 			while(buff[j++]!=' ');
 			write(ch1, buff+i, j-i);
@@ -503,9 +523,8 @@ void parseFifo(char buff[], int bRead, unsigned long* sets,
 			while(buff[i++]!=' ');
 			write(ch2, buff+j, i-j);
 			j = i+1;
-			while(buff[j++]!=' ');
-			write(ch1, buff+i, j-i-1);
-			write(ch1, " ", 1);
+			while(buff[j++]!='\r');
+			write(ch3, buff+i, j-i);
 
 			(*sets)++;
 
