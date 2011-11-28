@@ -10,11 +10,11 @@ function farmData()
 
 global PORT;
 global SERIALCOMM;
-global DEBUG;
+global DBG;
 
 PLOT = 1;
 
-if DEBUG;
+if DBG;
     patient = 'asd';
     nMov = 3;
     nRep = 3;
@@ -67,7 +67,7 @@ for gID = 1:nMov
             pause();
             try
                 close(f);
-            catch e
+            catch e %#ok<NASGU>
             end
         end
         

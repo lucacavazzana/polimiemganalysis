@@ -10,16 +10,16 @@ clc;
 
 global PORT;
 global SERIALCOMM;
-global DEBUG;
-DEBUG = 1;
+global DBG;
+DBG = 1;
 
 global LUCA;    % yeah, that's me
 LUCA = 1;
 
 if(ispc())
-    SERIALCOMM = 'serialComm.exe';
+    SERIALCOMM = 'serialComm.exe'; %#ok<NASGU>
 else
-    SERIALCOMM = './serialComm';
+    SERIALCOMM = './serialComm'; %#ok<NASGU>
 end
 
 if LUCA      % FIXME remove here
@@ -32,7 +32,7 @@ if LUCA      % FIXME remove here
     end
 else
     
-    PORT = portGUI();
+    PORT = portGUI(); %#ok<UNRCH>
     
 end
 
