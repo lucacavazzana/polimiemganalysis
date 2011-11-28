@@ -15,6 +15,7 @@
  *
  * Last update:   Nov 9, 2011
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -430,7 +431,7 @@ void parse(char buff[], DWORD* bRead, unsigned long* sets,
 
 #ifdef _PARSEDEBUG
 	if(*bRead)
-		printf("PARSE FUNCT: I'm alive! Bytes red: %d\n", (int)*bRead);
+		printf("PARSE FUNCT: I'm alive! Bytes read: %d\n", (int)*bRead);
 #endif
 
 	while(i<(int)(*bRead) && buff[i]!='D' && buff[i]!='I'){i++;};
