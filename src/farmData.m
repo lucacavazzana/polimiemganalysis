@@ -1,12 +1,12 @@
 function farmData()
 %FARMDATA   Acquires training sets
-%   FARMDATA() saves the acquired values in a subfolder of the current
-%   path, plus a gest.mat file containing gestures name, ID and
-%   #repetitions
+%  FARMDATA() saves the acquired values in a subfolder of the current
+%  path, plus a gest.mat file containing gestures name, ID and
+%  #repetitions
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
-%	FIXME: update
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
+%  FIXME: update
 
 global PORT;
 global SERIALCOMM;
@@ -15,17 +15,17 @@ global DBG;
 PLOT = 1;
 
 if DBG;
-    patient = 'asd';
+    patient = 'lol';
     nMov = 3;
     nRep = 3;
-    movName = {'closeHand'; ...
-            'openHand'; ...
-            'wristExtension'};
+    movName = {'close_hand'; ...
+        'open_hand'; ...
+        'ext_wrist'};
 else
     
-%     while(~exist('patient','var') || isempty(patient))
-%         patient = input('Insert patient name:\n','s');
-%     end
+    %     while(~exist('patient','var') || isempty(patient))
+    %         patient = input('Insert patient name:\n','s');
+    %     end
     
     [nMov movName patient] = acqGUI();
     
@@ -39,7 +39,6 @@ else
     end
 end
 
-seq = 1;
 gest = cell(nMov,3);    % {ID, movname, nRep}
 
 for gID = 1:nMov
@@ -51,7 +50,7 @@ for gID = 1:nMov
         ret = system([SERIALCOMM ' -a -d ' PORT ...
             ' -p ' patient ...
             ' -i ' sprintf('%d', gID) ...
-            ' -s ' sprintf('%d', seq) ...
+            ' -s ' sprintf('%d', r) ...
             ' -g ' movName{gID}]);
         
         if(ret~=0)
@@ -61,7 +60,7 @@ for gID = 1:nMov
         % if true plots the current EMG acqusition
         if PLOT
             
-            f = plotEmgFile(patient, seq, gID, movName{gID});
+            f = plotEmgFile(patient, r, gID, movName{gID});
             
             disp('Press a key to continue...');
             pause();
@@ -72,7 +71,6 @@ for gID = 1:nMov
         end
         
         gest(gID,:) = {gID, movName{gID}, nRep};
-        seq = seq+1;
     end
 end
 

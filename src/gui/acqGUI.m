@@ -72,8 +72,11 @@ close(f);
         
         n = get(numBox, 'Value')+1;
         gests = get(hBox(1:n), 'String');
-        uiresume(gcf);
-
         
+        for j=1:length(gests)
+            gests{j}(gests{j}==' ')='_';
+        end      
+        
+        uiresume(gcf);
     end
 end
