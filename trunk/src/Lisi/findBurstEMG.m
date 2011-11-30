@@ -95,7 +95,7 @@ for i = 2:ls
             if(prev1+sampleDur<ls)  % se non overflowiamo
                 next1=prev1+sampleDur;
             else
-                next1=1;    % FIXME: inutile, se siamo qui dentro è già 1!
+                next1=1;    % FIXME: inutile, se siamo qui dentro è già 1! Inoltre potremmo già fare return...
             end
         else
             prev1=1;
