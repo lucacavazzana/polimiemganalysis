@@ -67,7 +67,7 @@ if(length(y1)~= 1)
     %cutoffF1=10;
     %nyquistF = cutoffF1/(freqCamp/2);
     [num, den] = butter(2, 0.0741, 'high');
-    filtS = filter(num, den, c1);   % e perché non più y1?
+    filtS = filter(num, den, c1);
     filtSign = filtS(50:end);
     
     filtS2=filter(num,den,c2);
