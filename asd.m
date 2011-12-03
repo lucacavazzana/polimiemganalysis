@@ -1,45 +1,4 @@
-function feats = testTraining(patient)
-
-global DBG;    % debug
-
-if DBG
-    patient = 'asd';
-end
-
-% loading gesture info
-if(ispc())
-    load([patient,'\gest.mat']);
-else
-    load([patient,'/gest.mat']);
-end
-
-feats = cell(size(gest,1),1);
-
-% extracting bursts and features
-for gg=1:size(gest,1) % for each gesture #ok<USENS>
-    feats{gg}=cell(gest{gg,3},1);
-    
-    for rr=1:gest{gg,3} % for each repetition
-        emg=[];
-        
-        for cc=1:3
-            f = fopen(sprintf('%s\\ch%d\\%d-%d-%s.txt', patient, cc, gest{gg,1}, rr, gest{gg,2}));
-            emg(:,cc) = fscanf(f,'%d');
-            fclose(f);
-            emg(end,3) = emg(end,end);  % dirty way to resize the vector to avoid reallocation in the next cycle
-        end
-        
-        feats{gg}{rr} = analyzeEmg(emg, gest{gg,2});
-        
-    end
-end
-
-% reordering
-for ii=1:size(gest,1)
-    feats{ii} = [feats{ii}{:}];
-end
-
-% dividing into training, validation and test set
+% feats = testTraining();
 [trSet, valSet, testSet] = splitData(feats,3/5,1/5);
 
 
@@ -88,4 +47,20 @@ net.trainParam.goal = 0.001;
 % train the ANN
 net = train(net,in,tar,{},{},v);
 
+
+% testing
+tentativi = 0;
+successi = 0;
+for gg = 1:length(feats)
+    nSam = length(testSet{gg});
+    
+    for jj = 1:nSam
+        out = sim(net, feats{gg}{testSet{gg}(jj)});
+        [~, res] = max(abs(out));
+        [res, gg]
+        tentativi = tentativi+1;
+        successi = (res == gg)+successi;
+    end
 end
+
+successi/tentativi
