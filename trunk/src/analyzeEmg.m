@@ -24,6 +24,7 @@ for  bb = 1:nBursts
 end
 
 if PLOT
+    clf;
     for cc=1:3
         subplot(3,1,cc);
         hold on;
@@ -39,7 +40,7 @@ if PLOT
         disp(gest);
     end
     pause;
-    close;
+    % remember to close the figure eventually
 end
 
 end

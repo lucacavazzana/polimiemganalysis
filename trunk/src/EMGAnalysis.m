@@ -1,9 +1,9 @@
 %EMGANALYSIS
-%	bla bla bla.
+%  bla bla bla.
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
-%	FIXME: update
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
+%  FIXME: update
 
 clear all;
 clc;

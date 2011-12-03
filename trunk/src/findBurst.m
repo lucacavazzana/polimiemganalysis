@@ -30,9 +30,11 @@ while(ii<ls)
         end
         
         % close checking the signal with most energy
+        closing = .95*intEmg(ii)/ii;
         while(next<ls)
             [~, maxEn] = max(intCh(next,:)-intCh(prev,:));
-            if(emg(next,maxEn) >= .95*intEmg(next)/next)
+            
+            if(emg(next,maxEn) >= closing)... .95*intEmg(next)/next)
                 next = next+50;
             else
                 break;

@@ -48,8 +48,7 @@ end
 for i=1:movNum
     train=f{i};
     target=targ{i};
-    sz=size(train);
-    len=sz(2);
+    len=size(train,2);
     per=randperm(len);
     traintemp=train(:,per);
     targettemp=target(:,per);
