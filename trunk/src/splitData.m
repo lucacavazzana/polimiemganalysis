@@ -14,13 +14,7 @@ testSet = cell(length(data),1);
 
 % TODO: add error checking
 for gg=1:length(data)
-    nel = length(data{gg});
-    perm = randperm(nel);
-    tr = round(nel*pTrain);
-    trSet{gg} = perm(1:tr);
-    val = round(nel*pVal);
-    valSet{gg} = perm(tr+1:tr+val);
-    testSet{gg} = perm(tr+val:end);
+     [trSet{gg}, valSet{gg}, testSet{gg}] = dividerand(length(data{gg}), pTrain, pVal, 1-pTrain-pVal);
 end
 
 end

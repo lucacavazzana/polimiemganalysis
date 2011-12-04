@@ -25,17 +25,22 @@ end
 
 if PLOT
     clf;
+    title(sprintf('%d bursts found',nBursts));
     for cc=1:3
         subplot(3,1,cc);
         hold on;
         plot(emg(:,cc));
         plot(splt(:,cc),'r','LineWidth', 2);
+        plot( cumsum([3*emg(1:50,cc); emg(51:end,cc)])./(1:length(emg))', 'y');
         if (~isempty(head))
             line([head;tail],100*ones(2,nBursts),'LineWidth',3);
         end
         axis([1,length(emg),-200,200]);
+        ylabel(sprintf('Ch%d',cc));
     end
     
+    subplot(3,1,1);
+    title(sprintf('%d bursts found',nBursts));
     if(nargin>1)
         disp(gest);
     end

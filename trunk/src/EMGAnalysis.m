@@ -47,7 +47,7 @@ sel = input(['What do you wanna do with your life?\n' ...
 if(sel == 1)
     farmData();
 elseif(sel == 2)
-    testTraining();
+    [a b c] = trainNN();
 elseif(sel == 3)
     recognize();
 elseif(sel == 4)

@@ -29,12 +29,16 @@ while(ii<ls)
             break;  % not enough data to complete an recognition
         end
         
-        % close checking the signal with most energy
-        closing = .95*intEmg(ii)/ii;
+        % TODO: different apporaches for closing value. WIP
+        
+        % closing = intEmg(ii)/ii; % *.95;   % threshold using opening value
         while(next<ls)
+            % close checking the signal with most energy
             [~, maxEn] = max(intCh(next,:)-intCh(prev,:));
             
-            if(emg(next,maxEn) >= closing)... .95*intEmg(next)/next)
+            % closing = .95*intEmg(next)/next; % close using current mean value
+            closing = .9*(intEmg(next)-intEmg(prev))/(next-prev);   % close when signal < mean burst energy
+            if(emg(next,maxEn) >= closing) % .95*intEmg(next)/next)
                 next = next+50;
             else
                 break;
