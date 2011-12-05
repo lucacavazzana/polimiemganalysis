@@ -7,7 +7,7 @@ head = [];
 tail = [];
 ch = [];
 
-SAMPLEDUR = 270;   % 1s acquisition
+SAMPLEDUR = 269;   % 1s acquisition
 
 ls = length(emg);
 

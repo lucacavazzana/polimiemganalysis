@@ -1,4 +1,4 @@
-function feats = analyzeEmg(emg, gest)
+function feats = analyzeEmg(emg, action, gest)
 
 PLOT = 0;
 
@@ -15,12 +15,20 @@ splt = filter(b,a,rect);
 nBursts = length(head);
 
 emg = filter(d,c,emg);
-
 feats = cell(1,nBursts);
-for  bb = 1:nBursts
-    feats{bb} = [extractFeatures(emg(head(bb):tail(bb),1)); ...
-        extractFeatures(emg(head(bb):tail(bb),2)); ...
-        extractFeatures(emg(head(bb):tail(bb),3))];
+
+switch action
+    case 'feats'    % returns emg features
+        for  bb = 1:nBursts
+            feats{bb} = [extractFeatures(emg(head(bb):tail(bb),1)); ...
+                extractFeatures(emg(head(bb):tail(bb),2)); ...
+                extractFeatures(emg(head(bb):tail(bb),3))];
+        end
+        
+    case 'emg'  % returns raw emg
+        for  bb = 1:nBursts
+            feats{bb} = emg(head(bb):tail(bb),:);
+        end
 end
 
 if PLOT
