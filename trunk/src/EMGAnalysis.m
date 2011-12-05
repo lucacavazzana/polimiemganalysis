@@ -42,18 +42,23 @@ sel = input(['What do you wanna do with your life?\n' ...
     '2- train whatever\n' ...
     '3- recognize\n' ...
     '4- rec online\n' ...
-    '5- I wanna rock!\n']);
+    '5- test precognition\n', ...
+    '6- I wanna rock!\n']);
 
-if(sel == 1)
-    farmData();
-elseif(sel == 2)
-    [a b c] = trainNN();
-elseif(sel == 3)
-    recognize();
-elseif(sel == 4)
-    onlineRecogn();
-elseif(sel == 5)
-    web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
-else
-    printf('Wrong selection');
+switch(sel)
+    
+    case 1
+        farmData();
+    case 2
+        [net perf tr] = trainNN();
+    case 3
+        recognize();
+    case 4
+        onlineRecogn();
+    case 5
+        testPrecog();
+    case 6
+        web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
+    otherwise
+        printf('Wrong selection');
 end
