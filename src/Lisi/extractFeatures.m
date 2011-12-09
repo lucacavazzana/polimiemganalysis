@@ -8,12 +8,16 @@ function f = extractFeatures(data)
 %  luca.cavazzana@gmail.com, beppelisi@gmail.com
 %  9 November 2011
 
-% Wavelet Coefficient + SVD
-w = svd(cwt(data,1:5,'morl'));
-
-% integral EMG
-iemg = sum(abs(data));  % FIXME: if signal already rectified useless to abs
-% adding mean absolute value
-f = [w; iemg; iemg/length(data);];
+% starting from the last, so we avoid to rellocate the resulting vector
+% after each iteration
+for ii = size(data,1):-1:1
+    % Wavelet Coefficient + SVD
+    w = svd(cwt(data(:,ii),1:5,'morl'));
+    
+    % integral EMG
+    iemg = sum(abs(data(:,ii)));  % FIXME: if signal already rectified useless to abs
+    % adding mean absolute value
+    f(7*(ii-1)+1:7*ii,1) = [w; iemg; iemg/size(data,1)];
+end
 
 end

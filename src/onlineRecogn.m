@@ -1,4 +1,4 @@
-function onlineRecogn()
+function onlineRecogn(net)
 %ONLINERECOGNITION  TODO
 %
 
