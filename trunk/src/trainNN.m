@@ -3,6 +3,7 @@ function [net, perf, tr] = trainNN(patient)
 global DBG;    % debug
 JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the saved data and jump to the NN part
 TESTNET = 1; % if 1 test on gesture recognition is performed
+BURSTRATIO = .5;  % percentage of the burst we are using to train the NN
 
 if JUSTTRAIN
     load('feats.mat');
@@ -27,13 +28,14 @@ else
         for rr=1:gest{gg,3} % for each repetition
             emg=[];
             
-            for cc=1:3
+            % starting from the last a Nx3 matrix is allocated, so we don't
+            % have to resize adding a column every cycle
+            for cc=3:-1:1
                 emg(:,cc) = convertFile2MAT(sprintf('%s\\ch%d\\%d-%d-%s.txt', ...
                     patient, cc, gest{gg,1}, rr, gest{gg,2}));
-                emg(end,3) = emg(end,end);  % dirty way to resize the vector to avoid reallocation in the next cycle
             end
             
-            feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', gest{gg,2})];
+            feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', BURSTRATIO, gest{gg,2})];
             
         end
     end
@@ -43,7 +45,7 @@ end
 clear emg;
 
 % training the net now
-inputs = cell2Mat([feats{:}]);
+inputs = cell2mat([feats{:}]);
 targets = zeros(length(feats), size(inputs,2));
 
 ii = 0;

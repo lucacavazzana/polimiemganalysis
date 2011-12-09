@@ -25,7 +25,10 @@ while(ii<ls)
         prev = max(ii-100, 1);  % shifting back some samples
         
         next = prev+SAMPLEDUR;
+        % FIXME HERE
         if(next>ls)
+            head = [head, prev];
+            tail = [tail, ls];
             break;  % not enough data to complete an recognition
         end
         

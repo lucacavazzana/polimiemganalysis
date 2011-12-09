@@ -46,13 +46,12 @@ sel = input(['What do you wanna do with your life?\n' ...
     '6- I wanna rock!\n']);
 
 switch(sel)
-    
     case 1
         farmData();
     case 2
         [net perf tr] = trainNN();
     case 3
-        recognize();
+        recogni2ze();
     case 4
         onlineRecogn();
     case 5

@@ -1,4 +1,14 @@
-function feats = analyzeEmg(emg, action, gest)
+function feats = analyzeEmg(emg, action, burstRatio, gest)
+%ANALYZEEMG
+%   INPUT:
+%   - EMG       :   raw emg data
+%   - ACTION    :   'feats' if yout want the computed features
+%                   'emg' if you want the raw burst emg
+%   - BURSTRATIO:   if <1 analyze only the initiali value% of the signal
+%   - GEST      :   gesture name string (for fancy debugging plots)
+%
+%   OUTPUT:
+%   - FEATS     :   raw emg data or features vector (according to ACTION)
 
 PLOT = 0;
 
@@ -17,12 +27,16 @@ nBursts = length(head);
 emg = filter(d,c,emg);
 feats = cell(1,nBursts);
 
+if (exist('burstRatio','var') && ~isempty(burstRatio) && burstRatio<1)
+    for bb = 1:nBursts
+        tail(bb) = head(bb) + floor((tail(bb)-head(bb))*burstRatio);
+    end
+end
+
 switch action
     case 'feats'    % returns emg features
         for  bb = 1:nBursts
-            feats{bb} = [extractFeatures(emg(head(bb):tail(bb),1)); ...
-                extractFeatures(emg(head(bb):tail(bb),2)); ...
-                extractFeatures(emg(head(bb):tail(bb),3))];
+            feats{bb} = extractFeatures(emg(head(bb):tail(bb),:));
         end
         
     case 'emg'  % returns raw emg

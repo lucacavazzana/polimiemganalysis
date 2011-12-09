@@ -1,7 +1,7 @@
 function testPrecog(patient, net)
 
 global DBG;
-JMP = 1;    % skip the loading part (to speedup debugging)
+JMP = 0;    % skip the loading part (to speedup debugging)
 
 if JMP
     load('emgs.mat');
@@ -17,9 +17,8 @@ else
         load([patient,'/gest.mat']);
     end
     
-    if(~exist('net','var'))
-        load('net.mat');
-    end
+
+    load('halfNet.mat');
     
     emgs = cell(size(gest,1),1);
     targets = [];
@@ -59,7 +58,7 @@ for ii = tr.testInd
         conta(ll) = conta(ll)+1;
     end
 end
-save('spam.mat');
+save('spam2.mat');
 last = find(conta, 1, 'last');
 bar(step*(1:last), resps(1:last)./conta(1:last));
 
