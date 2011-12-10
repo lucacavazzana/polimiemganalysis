@@ -10,7 +10,7 @@ function f = extractFeatures(data)
 
 % starting from the last, so we avoid to rellocate the resulting vector
 % after each iteration
-for ii = size(data,1):-1:1
+for ii = size(data,2):-1:1
     % Wavelet Coefficient + SVD
     w = svd(cwt(data(:,ii),1:5,'morl'));
     
