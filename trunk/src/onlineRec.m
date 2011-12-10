@@ -1,26 +1,31 @@
 function [] = onlineRec(net)
 
+clc;
 DBG = 1;
-DRAW = 1;
+DRAW = 1;   % visual feedback for debugging
 
-global DATA;
+global DATA;    % to reset the symBoard function
 DATA = [];
 
 if DRAW
+    close all;
     f = figure;
-    f2 = figure;
+    set(f,'Position', get(f,'Position').*[.75 1 1.5 1]);
     drawnow;
 end
 
 [nLow, dLow] = butter(2, 0.0148);   % 4/270
 [nHigh, dHigh] = butter(2, 0.0741, 'high'); % 20/270
 
-tmpBuffSize = 540; % space for 2 sec of acquisition
+tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
 emg = zeros(tmpBuffSize,3);
 emgStart = 1; emgEnd = 0;
 
+gotBurst = 0;   % FIXME: maybe useless
+
+% acquiring enough data to allow a first recognition
 while(emgEnd-emgStart<110)
-    out = symBoard();
+    out = simBoard();
     outLen = size(out,1);
     emg(emgEnd+1:emgEnd+outLen,:) = out-512;
     emgEnd = emgEnd+outLen;
@@ -29,7 +34,7 @@ end
 while(1)
     
     % data acquisition
-    out = symBoard();
+    out = simBoard();
     outLen = size(out,1);
     
     newEnd = emgEnd+outLen;
@@ -40,59 +45,87 @@ while(1)
         emg(1:newEnd,:) = [emg(emgStart:emgEnd,:); out-512];
         emgStart = 1;
         if(newEnd > tmpBuffSize)
-            warning('Warning: resizing emg buffer');
+            warning('resizing emg buffer');
             tmpBuffSize = newEnd;
         end
     end
     emgEnd = newEnd;
     
-    fprintf('- emgStart %d, emgEnd %d\n', emgStart, emgEnd);
+    [heads, tails] = findBurst( filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))) );
+    nBursts = length(heads);
     
-	[heads, tails] = findBurst( filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))) );
-    
-    if DRAW
-        figure(f2);
-        clf;
-        asd = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:)));
-        plot(asd(:,1));
+    if DBG
+        fprintf('- emgStart %d, emgEnd %d, len %d\n', emgStart, emgEnd, emgEnd-emgStart+1);
     end
-    nBursts = length(heads)
+    if DRAW
+        low = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:)));
+        clf;
+        subplot(3,2,[1 3 5]);
+        if(nBursts==0)
+            plot(low(:,1));
+        else
+            plot(1:length(low), low(:,1), ...
+                heads(1):tails(1), low(heads(1):tails(1),1),'r');
+            legend('moving average','found burst');
+        end
+    end
     
     if(nBursts == 0)
         emgStart = emgEnd-100;
     else
+        ls = tails-heads+1;
         heads = heads + emgStart-1;
         tails = tails + emgStart-1;
         
         if DBG
-            disp('got burst at');
-            disp(heads);
+            fprintf('got %d burst(s)\n', nBursts);
+            fprintf('burst @ %d, length %d \n', heads, ls);
         end
         
+        % feature extraction
         for bb = 1:nBursts
-%             feats{bb}{1} = extractFeatures(emg(heads(bb):tails(bb),:));
+            if(ls(bb)>120)  % set this
+                if DBG
+                    t = toc;
+                end
+                feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
+                nnRes = sim(net,feat);
+                [~, resp] = find(max(nnRes));
+                fprintf('   %f', nnRes);
+                fprintf('\ngesture %d\n', resp);
+                if DBG
+                    fprintf('analysis time: %.3fs\n\n', toc-t);
+                end
+            elseif(DBG)
+                fprintf('... but is so short that isn''t worth analyzing it');
+            end
+            
         end
         
-        if(emgEnd>tails(end))
+        if(emgEnd>tails(end))   % tail < emgEnd => burst is closed, we can flush it
             emgStart = emgEnd-100;
-        else
+        else    % tail==emgEnd => incomplete burst, keep it
             emgStart = heads(end);
         end
     end
     
     if DRAW
-        figure(f)
-        clf;
-        subplot(3,1,1);
+        subplot(3,2,2);
         plot(1:tmpBuffSize, emg(:,1), ...
             emgStart:emgEnd, emg(emgStart:emgEnd,1),'r');
-        subplot(3,1,2);
-        plot(emg(:,2));
-        subplot(3,1,3);
-        plot(emg(:,3));
-        pause();
+        ylabel('Ch1');
+        subplot(3,2,4);
+        plot(1:tmpBuffSize, emg(:,2),  ...
+            emgStart:emgEnd, emg(emgStart:emgEnd,2),'r');
+        ylabel('Ch2');
+        subplot(3,2,6);
+        plot(1:tmpBuffSize, emg(:,3), ...
+            emgStart:emgEnd, emg(emgStart:emgEnd,3),'r');
+        ylabel('Ch3');
+        drawnow;
     end
     
+    pause();
 end
 
 end

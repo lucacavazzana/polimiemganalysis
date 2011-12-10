@@ -35,7 +35,7 @@ while(ii<ls)
         % TODO: different apporaches for closing value. WIP
         
         % closing = intEmg(ii)/ii; % *.95;   % threshold using opening value
-        while(next<ls)
+        while(next<=ls)
             % close checking the signal with most energy
             [~, maxEn] = max(intCh(next,:)-intCh(prev,:));
             
@@ -48,9 +48,15 @@ while(ii<ls)
             end
         end
         
-        head = [head, prev];
-        tail = [tail, min(next,ls)];
-        ch = [ch, maxEn];
+        head = [head, prev]; %#ok<AGROW>
+        tail = [tail, min(next,ls)]; %#ok<AGROW>
+        try     % FIXME: should be ok now
+            ch = [ch, maxEn]; %#ok<AGROW>
+        catch e     % this is to catch a nasty bug sometimes appeas
+            disp('THE DAMN BUG OCCURED!');
+            save('but.mat');
+            keyboard;
+        end
         
         ii = next+100;
         
