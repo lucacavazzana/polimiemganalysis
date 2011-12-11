@@ -12,7 +12,8 @@ function f = extractFeatures(data)
 % after each iteration
 for ii = size(data,2):-1:1
     % Wavelet Coefficient + SVD
-    w = svd(cwt(data(:,ii),1:5,'morl'));
+    asd = cwt(data(:,ii),1:5,'morl');
+    w = svd(asd);
     
     % integral EMG
     iemg = sum(abs(data(:,ii)));  % FIXME: if signal already rectified useless to abs

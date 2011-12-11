@@ -2,10 +2,11 @@ function [] = onlineRec(net)
 
 clc;
 DBG = 1;
-DRAW = 1;   % visual feedback for debugging
+DRAW = 0;   % visual feedback for debugging
 
-global DATA;    % to reset the symBoard function
-DATA = [];
+fclose all;
+global BOARD;    % to reset the symBoard function
+BOARD = [];
 
 if DRAW
     close all;
@@ -17,6 +18,8 @@ end
 [nLow, dLow] = butter(2, 0.0148);   % 4/270
 [nHigh, dHigh] = butter(2, 0.0741, 'high'); % 20/270
 
+chunk = [];
+
 tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
 emg = zeros(tmpBuffSize,3);
 emgStart = 1; emgEnd = 0;
@@ -25,17 +28,30 @@ gotBurst = 0;   % FIXME: maybe useless
 
 % acquiring enough data to allow a first recognition
 while(emgEnd-emgStart<110)
-    out = simBoard();
+    [out, chunk] = parseEMG(simBoard2(), chunk);
     outLen = size(out,1);
     emg(emgEnd+1:emgEnd+outLen,:) = out-512;
     emgEnd = emgEnd+outLen;
+    pause(.05);
 end
 
 while(1)
     
     % data acquisition
-    out = simBoard();
+    try
+        [out, chunk] = parseEMG(simBoard2(), chunk);
+    catch e
+        warning('NO MORE DATA');
+        return;
+    end
+    
     outLen = size(out,1);
+    
+    if(outLen==0)
+        pause(.05-toc);
+        continue;
+    end
+    
     
     newEnd = emgEnd+outLen;
     if(newEnd <= tmpBuffSize)
@@ -84,20 +100,24 @@ while(1)
         
         % feature extraction
         for bb = 1:nBursts
-            if(ls(bb)>120)  % set this
+            if(ls(bb)>130)  % FIXME: under 130 (tune this) samples the result isn't very relailable
                 if DBG
                     t = toc;
                 end
                 feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
                 nnRes = sim(net,feat);
-                [~, resp] = find(max(nnRes));
+                resp = find(nnRes>.6);
                 fprintf('   %f', nnRes);
-                fprintf('\ngesture %d\n', resp);
+                fprintf('\n');
+                if(~isempty(resp))
+                    fprintf('gesture %d\n', resp);
+                end
                 if DBG
-                    fprintf('analysis time: %.3fs\n\n', toc-t);
+                    t2 = toc;
+                    fprintf('time from acquisition: %.3fs\nanalysis time: %.3fs\n\n', t2, t2-t);
                 end
             elseif(DBG)
-                fprintf('... but is so short that isn''t worth analyzing it');
+                fprintf('... but is so short that isn''t worth analyzing it\n');
             end
             
         end
@@ -110,22 +130,28 @@ while(1)
     end
     
     if DRAW
-        subplot(3,2,2);
+        subplot(3,2,2); hold on;
         plot(1:tmpBuffSize, emg(:,1), ...
             emgStart:emgEnd, emg(emgStart:emgEnd,1),'r');
+        ax = axis;
+        plot([emgEnd,emgEnd],ax([3,4]),'g');
         ylabel('Ch1');
-        subplot(3,2,4);
+        subplot(3,2,4); hold on;
         plot(1:tmpBuffSize, emg(:,2),  ...
             emgStart:emgEnd, emg(emgStart:emgEnd,2),'r');
+        ax = axis;
+        plot([emgEnd,emgEnd],ax([3,4]),'g');
         ylabel('Ch2');
-        subplot(3,2,6);
+        subplot(3,2,6); hold on;
         plot(1:tmpBuffSize, emg(:,3), ...
             emgStart:emgEnd, emg(emgStart:emgEnd,3),'r');
+        ax = axis;
+        plot([emgEnd,emgEnd],ax([3,4]),'g');
         ylabel('Ch3');
         drawnow;
+%         pause();
     end
     
-    pause();
 end
 
 end
