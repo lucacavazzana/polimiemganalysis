@@ -24,7 +24,7 @@ if(exist('rem', 'var') && ~isempty(rem))
         rem = [rem, data];
         return;
     else
-        ch(size(ds,2),3) = 0;    % preallocate
+        ch(size(ds,2),3) = 0;    % preallocate #D 
         rem = [rem, data(1:ds(1))];
         ch(1,:) = sscanf(rem(3:end),'%d')';
         nSets = 1;
