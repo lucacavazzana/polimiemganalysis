@@ -1,14 +1,14 @@
 function feats = analyzeEmg(emg, action, burstRatio, gest)
 %ANALYZEEMG
-%   INPUT:
-%   - EMG       :   raw emg data
-%   - ACTION    :   'feats' if yout want the computed features
+% INPUT
+%           EMG :	raw emg data
+%        ACTION :   'feats' if yout want the computed features
 %                   'emg' if you want the raw burst emg
-%   - BURSTRATIO:   if <1 analyze only the initiali value% of the signal
-%   - GEST      :   gesture name string (for fancy debugging plots)
+%    BURSTRATIO :   if <1 analyze only the initiali value% of the signal
+%          GEST :   gesture name string (for fancy debugging plots)
 %
-%   OUTPUT:
-%   - FEATS     :   raw emg data or features vector (according to ACTION)
+% OUTPUT
+%         FEATS :   raw emg data or features vector (according to ACTION)
 
 PLOT = 0;
 

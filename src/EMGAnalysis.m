@@ -49,13 +49,14 @@ switch(sel)
     case 1
         farmData();
     case 2
-        [net perf tr] = trainNN();
+        [net tr] = trainNN('asd', 10);
     case 3
         recogni2ze();
     case 4
         onlineRecogn();
     case 5
-        testPrecog();
+        load('halfNets10.mat');
+        testPrecog('asd', net, tr);
     case 6
         web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
     otherwise
