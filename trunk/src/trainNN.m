@@ -1,17 +1,19 @@
-function [net, perf, tr] = trainNN(patient)
+function [nets, trs] = trainNN(patient, nnn)
+
+% INPUTS
+%   PATIENT :   patient folder name
+%       NNN :   # of nets to train
+%
+% OUTPUTS
+%      NETS :   vector of NN
 
 global DBG;    % debug
 JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the saved data and jump to the NN part
-TESTNET = 1; % if 1 test on gesture recognition is performed
-BURSTRATIO = .5;  % percentage of the burst we are using to train the NN
+BURSTRATIO = 1;  % percentage of the burst we are using to train the NN
 
 if JUSTTRAIN
-    load('feats.mat');
+    load('fullFeats.mat');
 else
-    
-    if DBG
-        patient = 'asd';
-    end
     
     % loading gesture info
     if(ispc())
@@ -41,13 +43,14 @@ else
     end
     
 end
-
+keyboard
 clear emg;
 
 % training the net now
 inputs = cell2mat([feats{:}]);
 targets = zeros(length(feats), size(inputs,2));
 
+% building target matrix
 ii = 0;
 for gg = 1:length(feats)
     nSam = size(feats{gg},2);
@@ -56,46 +59,47 @@ for gg = 1:length(feats)
     ii = ii+nSam;
 end
 
-net = patternnet(35);   % FIXME: eventually modify this parameter
-
-% setup division of data for training, validation, testing
-net.divideFcn = 'dividerand';  % divide data randomly
-net.divideMode = 'sample';  % divide up every sample
-net.divideParam.trainRatio = .75;
-net.divideParam.valRatio = .15;
-net.divideParam.testRatio = .1;
-
-net.performFcn = 'mse';  % mean squared error
-
-% train the network
-[net, tr] = train(net,inputs,targets);
-
-% test the network
-if nargout>1
-    outputs = net(inputs);
-    perf.errors = gsubtract(targets,outputs);
-    perf.all = perform(net,targets,outputs);
-    
-    % recalculate training, validation and test performance
-    perf.train = perform(net, targets .* tr.trainMask{1}, outputs);
-    perf.val = perform(net, targets  .* tr.valMask{1}, outputs);
-    perf.test = perform(net, targets  .* tr.testMask{1}, outputs);
+if(nargin<2)
+    nnn=1;
 end
 
-% testing using the test set
-if TESTNET
+if(nnn>1)
+    nets{nnn} = 0;  % preallocating
+    trs{nnn} = 0;
+end
+
+buildResp = eye(length(gest));
+
+for ii = 1:nnn
     
-    succ = 0;
-    tot = 0;
-    
-    for ii = tr.testInd
-        [~, res] = max(sim(net,inputs(:,ii)));
-        succ = succ+(res==find(targets(:,ii)));
-        tot=tot+1;
+    rate = 0;
+    while(rate < .925)
+        
+        net = patternnet(35);   % FIXME: eventually modify this parameter
+        
+        % setup division of data for training, validation, testing
+        net.divideFcn = 'dividerand';  % divide data randomly
+        net.divideMode = 'sample';  % divide up every sample
+        net.divideParam.trainRatio = .75;
+        net.divideParam.valRatio = .15;
+        net.divideParam.testRatio = .1;
+        
+        net.performFcn = 'mse';  % mean squared error
+        
+        % train the network
+        [net, tr] = train(net,inputs,targets);
+        
+        % test rate
+        [~, resp] = max(net(inputs(:,tr.testInd)),[],1);
+        rate = sum(all(buildResp(:,resp)==targets(:,tr.testInd))) / length(tr.testInd);
     end
     
-    fprintf('success rate %.2f%% over %d test sets\n', succ/tot*100, tot);
+    if DBG
+        fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);
+    end
     
+    nets{ii} = net;
+    trs{ii}=tr;
 end
 
 end
