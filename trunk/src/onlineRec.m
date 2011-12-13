@@ -100,24 +100,28 @@ while(1)
         
         % feature extraction
         for bb = 1:nBursts
-            if(ls(bb)>130)  % FIXME: under 130 (tune this) samples the result isn't very relailable
+            if(ls(bb)>110)  % FIXME: under 110 (tune this) samples the result isn't very relailable
                 if DBG
-                    t = toc;
+                    t1 = toc;
                 end
                 feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
-                nnRes = sim(net,feat);
+                if DBG
+                    t2 = toc;
+                end
+                nnRes = net(feat);
                 resp = find(nnRes>.6);
-                fprintf('   %f', nnRes);
+                fprintf('   %.3f', nnRes);
                 fprintf('\n');
                 if(~isempty(resp))
                     fprintf('gesture %d\n', resp);
                 end
                 if DBG
-                    t2 = toc;
-                    fprintf('time from acquisition: %.3fs\nanalysis time: %.3fs\n\n', t2, t2-t);
+                    t3 = toc;
+                    fprintf(['time from last acquisition: %.3fs '...
+                        '(feats: %.3fs, NN: %.3fs)\n\n'], t3, t2-t1, t3-t2);
                 end
             elseif(DBG)
-                fprintf('... but is so short that isn''t worth analyzing it\n');
+                fprintf('... but is so short that isn''t worth analyzing it\n\n');
             end
             
         end
