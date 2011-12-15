@@ -1,15 +1,27 @@
-function [nets, trs] = trainNN(patient, nnn)
+function [nets, trs] = trainNN(patient, nnn, burstRatio)
 
 % INPUTS
-%   PATIENT :   patient folder name
-%       NNN :   # of nets to train
+%    PATIENT :  patient folder name
+%        NNN :  # of nets to train
+% BURSTRATIO :  % of the burst to use
 %
 % OUTPUTS
-%      NETS :   vector of NN
+%       NETS :  cell array of NN
+%        TRS :  cell array of training records
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 global DBG;    % debug
-JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the saved data and jump to the NN part
-BURSTRATIO = 1;  % percentage of the burst we are using to train the NN
+JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) saved data and jump to the NN training
+
+if(nargin>3)
+    burstRatio = 1;
+end
+
+if(nargin>2)
+    nnn=1;
+end
 
 if JUSTTRAIN
     load('fullFeats.mat');
@@ -37,13 +49,13 @@ else
                     patient, cc, gest{gg,1}, rr, gest{gg,2}));
             end
             
-            feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', BURSTRATIO, gest{gg,2})];
+            feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, gest{gg,2})];
             
         end
     end
     
 end
-keyboard
+
 clear emg;
 
 % training the net now
@@ -59,10 +71,6 @@ for gg = 1:length(feats)
     ii = ii+nSam;
 end
 
-if(nargin<2)
-    nnn=1;
-end
-
 if(nnn>1)
     nets{nnn} = 0;  % preallocating
     trs{nnn} = 0;
@@ -73,8 +81,11 @@ buildResp = eye(length(gest));
 for ii = 1:nnn
     
     rate = 0;
-    while(rate < .925)
+    while(rate < .925)  % only the good ones
         
+        % need to re-init every time, otherwise new training will start
+        % from the old weights (using the whole data set for training,
+        % leading to overfitting on the dataset)
         net = patternnet(35);   % FIXME: eventually modify this parameter
         
         % setup division of data for training, validation, testing

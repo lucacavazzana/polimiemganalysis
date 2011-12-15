@@ -1,7 +1,7 @@
 function feats = analyzeEmg(emg, action, burstRatio, gest)
 %ANALYZEEMG
 % INPUT
-%           EMG :	raw emg data
+%           EMG :	raw emg data (expects a values within 0-1024)
 %        ACTION :   'feats' if yout want the computed features
 %                   'emg' if you want the raw burst emg
 %    BURSTRATIO :   if <1 analyze only the initiali value% of the signal
@@ -10,16 +10,20 @@ function feats = analyzeEmg(emg, action, burstRatio, gest)
 % OUTPUT
 %         FEATS :   raw emg data or features vector (according to ACTION)
 
-PLOT = 0;
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
+PLOT = 0;   % DBG
+
+% FIXME: not so sure is 270
 % 270/2 is the max freq we can see @270 sample/sec. This way we are cutting
 % off 2Hz for signal segmentation
 [b,a] = butter(2, 0.0148);	% 4/270
 [d,c] = butter(2, 0.0741, 'high');	% 20/270
 
 % preprocessing
-rect = abs(emg-512); % rectifiication   FIXME: but mean value is around 524
-splt = filter(b,a,rect);
+rect = abs(emg-512); % rectification   FIXME: but mean value is around 524
+splt = filter(b,a,rect);    % lowpass for segmentation
 % finding bursts
 [head, tail] = findBurst(splt);
 nBursts = length(head);
@@ -28,9 +32,7 @@ emg = filter(d,c,emg);
 feats = cell(1,nBursts);
 
 if (exist('burstRatio','var') && ~isempty(burstRatio) && burstRatio<1)
-    for bb = 1:nBursts
-        tail(bb) = head(bb) + floor((tail(bb)-head(bb))*burstRatio);
-    end
+    tail = head + floor((tail-head)*burstRatio);
 end
 
 switch action

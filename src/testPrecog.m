@@ -1,5 +1,11 @@
 function testPrecog(patient, nets, tr)
 
+%   test recognition rate on NETS 
+% INPUT
+%   PATIENT :	patient folder
+%      NETS :   cell array containing the nets to test
+%        TR :   cell array containing training records
+
 global DBG;
 JMP = 1;    % skip the loading part (to speedup debugging)
 

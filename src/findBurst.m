@@ -1,13 +1,24 @@
 function [head, tail, ch] = findBurst(emg)
 %FINDBURST
-%  [HEAD, TAIL, CH] = FINDBURST(EMG) gets (one or more) EMG channel data
-%  and
+%  [HEAD, TAIL, CH] = FINDBURST(EMG) gets (one or more) EMG channel data.
+%
+% INPUT
+%   	EMG :   MxN matrix of raw data of M samples over N channels
+%
+% OUTPUT
+%      HEAD :   indices where bursts start
+%      TAIL :   indices where bursts end
+%        CH :   id of the channel with more energy
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
+
 
 head = [];
 tail = [];
 ch = [];
 
-SAMPLEDUR = 269;   % 1s acquisition
+SAMPLEDUR = 269;   % 1 sec acquisition
 
 ls = length(emg);
 
@@ -27,12 +38,14 @@ while(ii<ls)
         next = prev+SAMPLEDUR;
         % FIXME HERE
         if(next>ls)
-            head = [head, prev];
-            tail = [tail, ls];
-            break;  % not enough data to complete an recognition
+            head = [head, prev]; %#ok<AGROW>
+            tail = [tail, ls]; %#ok<AGROW>
+            [~, maxEn] = max(intCh(ls,:)-intCh(prev,:));
+            ch = [ch, maxEn]; %#ok<AGROW>
+            break;  % not enough data for a complete recognition
         end
         
-        % TODO: different apporaches for closing value. WIP
+        % TODO: try different apporaches for closing value. WIP
         
         % closing = intEmg(ii)/ii; % *.95;   % threshold using opening value
         while(next<=ls)
@@ -43,22 +56,23 @@ while(ii<ls)
             closing = .9*(intEmg(next)-intEmg(prev))/(next-prev);   % close when signal < mean burst energy
             if(emg(next,maxEn) >= closing) % .95*intEmg(next)/next)
                 next = next+50;
-            else
+            else    % close the burst
                 break;
             end
         end
         
         head = [head, prev]; %#ok<AGROW>
         tail = [tail, min(next,ls)]; %#ok<AGROW>
+        [~, maxEn] = max(intCh(min(next,ls),:)-intCh(prev,:));
         try     % FIXME: should be ok now
             ch = [ch, maxEn]; %#ok<AGROW>
-        catch e     % this is to catch a nasty bug sometimes appeas
+        catch e     %#ok<NASGU> this is to catch a nasty bug that sometimes appears
             disp('THE DAMN BUG OCCURED!');
             save('but.mat');
             keyboard;
         end
         
-        ii = next+100;
+        ii = next+100;  % fast forward. No more bursts for at least 100 samples
         
     else
         

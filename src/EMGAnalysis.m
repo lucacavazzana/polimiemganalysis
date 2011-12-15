@@ -3,7 +3,6 @@
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
-%  FIXME: update
 
 clear all;
 clc;
@@ -25,13 +24,14 @@ end
 if LUCA      % FIXME remove here
     if(ispc())
         PORT = 'COM6';
-        SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe'; % FIXME: remove here
+        SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe';
     else
         PORT = '/dev/ttyUSB0';
         SERIALCOMM = '/home/luca/workspace/serialComm/Debug/serialComm';
     end
 else
     
+    % select serial port
     PORT = portGUI(); %#ok<UNRCH>
     
 end
@@ -49,12 +49,12 @@ switch(sel)
     case 1
         farmData();
     case 2
-        [net tr] = trainNN('asd', 10);
+        [net tr] = trainNN('asd', 10, .5);
     case 3
         recogni2ze();
     case 4
         load('halfNets10.mat', 'net');
-        onlineRecogn(net{1});
+        onlineRec(net{1});
     case 5
         load('halfNets10.mat');
         testPrecog('asd', net, tr);
