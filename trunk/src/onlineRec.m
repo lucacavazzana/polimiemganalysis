@@ -2,7 +2,7 @@ function [] = onlineRec(net)
 
 clc;
 DBG = 1;
-DRAW = 0;   % visual feedback for debugging
+DRAW = 1;   % visual feedback for debugging
 
 fclose all;
 global BOARD;    % to reset the symBoard function
@@ -23,8 +23,6 @@ chunk = [];
 tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
 emg = zeros(tmpBuffSize,3);
 emgStart = 1; emgEnd = 0;
-
-gotBurst = 0;   % FIXME: maybe useless
 
 % acquiring enough data to allow a first recognition
 while(emgEnd-emgStart<110)
