@@ -1,5 +1,7 @@
 %EMGANALYSIS
 %  bla bla bla.
+%
+% requires fastICA (http://research.ics.tkk.fi/ica/fastica/)
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com

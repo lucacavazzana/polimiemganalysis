@@ -4,6 +4,8 @@ clc;
 DBG = 1;
 DRAW = 1;   % visual feedback for debugging
 
+ICA = 1;    % still testing
+
 fclose all;
 global BOARD;    % to reset the symBoard function
 BOARD = [];
@@ -102,7 +104,16 @@ while(1)
                 if DBG
                     t1 = toc;
                 end
-                feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
+                
+                if ICA
+                    [s, a, w] = fastica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:))' , 'initguess', a);   % test if resetting a is needed
+                    % TODO: riordinare in qualche modo
+                    % ...
+                    feat = extractFeatures(s);
+                else
+                    feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
+                end
+                
                 if DBG
                     t2 = toc;
                 end

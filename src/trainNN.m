@@ -1,9 +1,12 @@
-function [nets, trs] = trainNN(patient, nnn, burstRatio)
+function [nets, trs] = trainNN(patient, nnn, burstRatio, varargin)
 
 % INPUTS
 %    PATIENT :  patient folder name
 %        NNN :  # of nets to train
 % BURSTRATIO :  % of the burst to use
+% OPTIONAL
+%      'ica' :  performs indipendent component analysis before feature
+%               extraction
 %
 % OUTPUTS
 %       NETS :  cell array of NN
@@ -15,11 +18,24 @@ function [nets, trs] = trainNN(patient, nnn, burstRatio)
 global DBG;    % debug
 JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) saved data and jump to the NN training
 
-if(nargin>3)
+ICA = 0;
+
+if (nargin>3)
+    for ii = 1:length(varargin)
+        switch(varargin{ii})
+            case 'ica'
+                ICA = 1;
+        end
+    end
+end
+
+return;
+    
+if(nargin<3)
     burstRatio = 1;
 end
 
-if(nargin>2)
+if(nargin<2)
     nnn=1;
 end
 
@@ -49,8 +65,11 @@ else
                     patient, cc, gest{gg,1}, rr, gest{gg,2}));
             end
             
-            feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, gest{gg,2})];
-            
+            if(ICA)
+                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
+            else
+                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
+            end            
         end
     end
     
@@ -77,25 +96,26 @@ if(nnn>1)
 end
 
 buildResp = eye(length(gest));
+keyboard;
+
+net = patternnet(35);   % FIXME: eventually modify this parameter
+% setup division of data for training, validation, testing
+net.divideFcn = 'dividerand';  % divide data randomly
+net.divideMode = 'sample';  % divide up every sample
+net.divideParam.trainRatio = .75;
+net.divideParam.valRatio = .15;
+net.divideParam.testRatio = .1;
+net.performFcn = 'mse';  % mean squared error
 
 for ii = 1:nnn
     
     rate = 0;
     while(rate < .925)  % only the good ones
         
-        % need to re-init every time, otherwise new training will start
-        % from the old weights (using the whole data set for training,
-        % leading to overfitting on the dataset)
-        net = patternnet(35);   % FIXME: eventually modify this parameter
-        
-        % setup division of data for training, validation, testing
-        net.divideFcn = 'dividerand';  % divide data randomly
-        net.divideMode = 'sample';  % divide up every sample
-        net.divideParam.trainRatio = .75;
-        net.divideParam.valRatio = .15;
-        net.divideParam.testRatio = .1;
-        
-        net.performFcn = 'mse';  % mean squared error
+        % need to re-init weight every time, otherwise new training will
+        % start from the old weights (using the whole data set for
+        %training, leading to overfitting on the dataset)
+        net = init(net);
         
         % train the network
         [net, tr] = train(net,inputs,targets);
