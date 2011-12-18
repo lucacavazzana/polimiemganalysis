@@ -1,11 +1,16 @@
-function feats = analyzeEmg(emg, action, burstRatio, gest)
+function [feats] = analyzeEmg(emg, action, burstRatio, varargin)
 %ANALYZEEMG
 % INPUT
 %           EMG :	raw emg data (expects a values within 0-1024)
 %        ACTION :   'feats' if yout want the computed features
 %                   'emg' if you want the raw burst emg
-%    BURSTRATIO :   if <1 analyze only the initiali value% of the signal
-%          GEST :   gesture name string (for fancy debugging plots)
+%    BURSTRATIO :   if < 1 analyze only the initiali value% of the signal
+%
+% OPTIONAL
+%         'ica' :   performs indipendent compnent analysis before features
+%                   extraction
+%        'gest' :   followed by gesture name string (for fancy debugging
+%                   plots)
 %
 % OUTPUT
 %         FEATS :   raw emg data or features vector (according to ACTION)
@@ -14,6 +19,18 @@ function feats = analyzeEmg(emg, action, burstRatio, gest)
 %  luca.cavazzana@gmail.com
 
 PLOT = 0;   % DBG
+
+ICA = 0;
+if(nargin>3)
+    for ii = 1:length(varargin)
+        switch varargin{ii}
+            case 'ica'
+                ICA = 1;
+            case 'gest'
+                gest = varargin{ii+1}; %#ok<NASGU>
+        end
+    end
+end
 
 % FIXME: not so sure is 270
 % 270/2 is the max freq we can see @270 sample/sec. This way we are cutting
@@ -37,12 +54,20 @@ end
 
 switch action
     case 'feats'    % returns emg features
-        for  bb = 1:nBursts
-            feats{bb} = extractFeatures(emg(head(bb):tail(bb),:));
+        
+        if ICA
+            for bb = 1:nBursts
+                sig = fastica(emg(head(bb):tail(bb),:)')';  % fastica wants and outputs CH x LEN matrices
+                feats{bb} = extractFeatures(sig);
+            end
+        else
+            for bb = 1:nBursts
+                feats{bb} = extractFeatures(emg(head(bb):tail(bb),:));
+            end
         end
         
     case 'emg'  % returns raw emg
-        for  bb = 1:nBursts
+        for bb = 1:nBursts
             feats{bb} = emg(head(bb):tail(bb),:);
         end
 end
@@ -65,7 +90,7 @@ if PLOT
     
     subplot(3,1,1);
     title(sprintf('%d bursts found',nBursts));
-    if(nargin>1)
+    if(exist('gest','var'))
         disp(gest);
     end
     pause;
