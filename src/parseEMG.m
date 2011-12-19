@@ -18,8 +18,8 @@ function [ch, rem] = parseEMG(data, rem)
 ds = find(data == 'D');
 nSets = 0;
 
-if(exist('rem', 'var') && ~isempty(rem))
-    if(isempty(ds))
+if( nargin>1 && ~isempty(rem) ) % if REM exists and is not empty
+    if(isempty(ds)) % not even a single complete set
         ch = [];
         rem = [rem, data];
         return;

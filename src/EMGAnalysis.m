@@ -56,7 +56,7 @@ switch(sel)
         recogni2ze();
     case 4
         load('halfNets10.mat', 'net');
-        onlineRec(net{1});
+        onlineRecognition(net{1});
     case 5
         load('halfNets10.mat');
         testPrecog('asd', net, tr);
