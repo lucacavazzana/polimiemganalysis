@@ -1,8 +1,8 @@
-function [] = onlineRec(net)
+function [] = onlineRecognition(net)
 
 clc;
 DBG = 1;
-DRAW = 1;   % visual feedback for debugging
+DRAW = 0;   % visual feedback for debugging
 
 ICA = 1;    % still testing
 
@@ -17,10 +17,12 @@ if DRAW
     drawnow;
 end
 
+% TODO: check if is 270 FOR REAL
 [nLow, dLow] = butter(2, 0.0148);   % 4/270
 [nHigh, dHigh] = butter(2, 0.0741, 'high'); % 20/270
 
-chunk = [];
+chunk = []; % tmp buffer for parsing
+a = []; % ICA initial guess
 
 tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
 emg = zeros(tmpBuffSize,3);
@@ -47,12 +49,12 @@ while(1)
     
     outLen = size(out,1);
     
-    if(outLen==0)
+    if(outLen==0)    % you're running too fast, calm down...
         pause(.05-toc);
         continue;
     end
     
-    
+    % messy way to avoid costly matrix resizing
     newEnd = emgEnd+outLen;
     if(newEnd <= tmpBuffSize)
         emg(emgEnd+1:newEnd,:) = out-512;
@@ -67,13 +69,14 @@ while(1)
     end
     emgEnd = newEnd;
     
+    % segmentation
     [heads, tails] = findBurst( filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))) );
     nBursts = length(heads);
     
     if DBG
         fprintf('- emgStart %d, emgEnd %d, len %d\n', emgStart, emgEnd, emgEnd-emgStart+1);
     end
-    if DRAW
+    if DRAW     % printing segmentation
         low = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:)));
         clf;
         subplot(3,2,[1 3 5]);
@@ -86,9 +89,10 @@ while(1)
         end
     end
     
-    if(nBursts == 0)
+    if(nBursts == 0)    % nothing here, trash it
         emgStart = emgEnd-100;
     else
+        % adjusting indices
         ls = tails-heads+1;
         heads = heads + emgStart-1;
         tails = tails + emgStart-1;
@@ -106,9 +110,8 @@ while(1)
                 end
                 
                 if ICA
-                    [s, a, w] = fastica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:))' , 'initguess', a);   % test if resetting a is needed
-                    % TODO: riordinare in qualche modo
-                    % ...
+                    % rebuilding the signal using only most relevant components
+                    [s, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
                     feat = extractFeatures(s);
                 else
                     feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
@@ -129,20 +132,35 @@ while(1)
                     fprintf(['time from last acquisition: %.3fs '...
                         '(feats: %.3fs, NN: %.3fs)\n\n'], t3, t2-t1, t3-t2);
                 end
-            elseif(DBG)
-                fprintf('... but is so short that isn''t worth analyzing it\n\n');
+                
+            else    % if the signal is too short
+                if ICA
+                    % compunting A (to be used as initguess to speedup
+                    % later analysis)
+                    t1 = toc;
+                    [~, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
+                    t2 = toc;
+                    fprintf('time fastICA only: %.3f\n', t2-t1);
+                end
+                if(DBG)
+                    fprintf('... but is so short that isn''t worth analyzing it\n\n');
+                end
             end
             
         end
         
         if(emgEnd>tails(end))   % tail < emgEnd => burst is closed, we can flush it
             emgStart = emgEnd-100;
+            a = []; % clearing initual guess
+            if DBG
+                fprintf('burst closed\n\n');
+            end
         else    % tail==emgEnd => incomplete burst, keep it
             emgStart = heads(end);
         end
     end
     
-    if DRAW
+    if DRAW     % drawing recognized signals
         subplot(3,2,2); hold on;
         plot(1:tmpBuffSize, emg(:,1), ...
             emgStart:emgEnd, emg(emgStart:emgEnd,1),'r');
@@ -162,7 +180,7 @@ while(1)
         plot([emgEnd,emgEnd],ax([3,4]),'g');
         ylabel('Ch3');
         drawnow;
-%         pause();
+        %         pause();
     end
     
 end
