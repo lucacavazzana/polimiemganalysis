@@ -1,21 +1,36 @@
-function [] = onlineRecognition(net)
+function [] = onlineRecognition(net, varargin)
 
 clc;
 DBG = 1;
 DRAW = 0;   % visual feedback for debugging
+CMPSIM = 0;
 
-ICA = 1;    % still testing
+ICA = 0;    % still testing
+
+if (nargin>1)
+    for ii = 1:length(varargin)
+        switch(varargin{ii})
+            case 'ica'
+                ICA = 1;
+        end
+    end
+end
 
 fclose all;
 global BOARD;    % to reset the symBoard function
 BOARD = [];
 
 if DRAW
-    close all;
+    close all; %#ok<UNRCH>
     f = figure;
     set(f,'Position', get(f,'Position').*[.75 1 1.5 1]);
     drawnow;
 end
+
+% initializing network struct
+net = nn.hints(net);
+if net.hint.zeroDelay, nnerr.throw('Network contains a zero-delay loop.'); end
+netStr = struct(net);
 
 % TODO: check if is 270 FOR REAL
 [nLow, dLow] = butter(2, 0.0148);   % 4/270
@@ -30,7 +45,7 @@ emgStart = 1; emgEnd = 0;
 
 % acquiring enough data to allow a first recognition
 while(emgEnd-emgStart<110)
-    [out, chunk] = parseEMG(simBoard2(), chunk);
+    [out, chunk] = parseEMG(simBoard(), chunk);
     outLen = size(out,1);
     emg(emgEnd+1:emgEnd+outLen,:) = out-512;
     emgEnd = emgEnd+outLen;
@@ -41,8 +56,8 @@ while(1)
     
     % data acquisition
     try
-        [out, chunk] = parseEMG(simBoard2(), chunk);
-    catch e
+        [out, chunk] = parseEMG(simBoard(), chunk);
+    catch e %#ok<NASGU>
         warning('NO MORE DATA');
         return;
     end
@@ -50,7 +65,7 @@ while(1)
     outLen = size(out,1);
     
     if(outLen==0)    % you're running too fast, calm down...
-        pause(.05-toc);
+        pause(.025-toc);
         continue;
     end
     
@@ -77,7 +92,7 @@ while(1)
         fprintf('- emgStart %d, emgEnd %d, len %d\n', emgStart, emgEnd, emgEnd-emgStart+1);
     end
     if DRAW     % printing segmentation
-        low = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:)));
+        low = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))); %#ok<UNRCH>
         clf;
         subplot(3,2,[1 3 5]);
         if(nBursts==0)
@@ -106,41 +121,61 @@ while(1)
         for bb = 1:nBursts
             if(ls(bb)>110)  % FIXME: under 110 (tune this) samples the result isn't very relailable
                 if DBG
-                    t1 = toc;
+                    tAn = toc;
                 end
                 
                 if ICA
                     % rebuilding the signal using only most relevant components
                     [s, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
+                    if DBG
+                        tIca = toc;
+                    end
                     feat = extractFeatures(s);
                 else
                     feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
+                end                
+                if DBG
+                    tEx = toc;
                 end
                 
+                nnRes = mySim(netStr,feat);
                 if DBG
-                    t2 = toc;
+                    tNN = toc;
                 end
-                nnRes = net(feat);
+                
+                if CMPSIM  % DEBUG: test if mySim gives 
+                    if(~all(nnRes==net(feat)))
+                        save('err.mat','net','netStr','feat');
+                    end
+                end
+                
                 resp = find(nnRes>.6);
                 fprintf('   %.3f', nnRes);
                 fprintf('\n');
                 if(~isempty(resp))
                     fprintf('gesture %d\n', resp);
                 end
+                
                 if DBG
-                    t3 = toc;
-                    fprintf(['time from last acquisition: %.3fs '...
-                        '(feats: %.3fs, NN: %.3fs)\n\n'], t3, t2-t1, t3-t2);
+                    if ICA
+                        fprintf(['time from last acquisition: %.3fs ' ...
+                            '(ICA: %.3fs, feats: %.3fs, NN: %.3fs)\n\n'], ...
+                            toc, tIca-tAn, tEx-tIca, tNN-tEx);
+                    else
+                        fprintf(['time from last acquisition: %.3fs ' ...
+                            '(feats: %.3fs, NN: %.3fs)\n\n'], ...
+                            toc, tEx-tAn, tNN-tEx);
+                    end
                 end
                 
             else    % if the signal is too short
                 if ICA
                     % compunting A (to be used as initguess to speedup
                     % later analysis)
-                    t1 = toc;
+                    tAn = toc;
                     [~, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
-                    t2 = toc;
-                    fprintf('time fastICA only: %.3f\n', t2-t1);
+                    tIca = toc;
+                    fprintf('time fastICA only: %.3f\n', tIca-tAn);
                 end
                 if(DBG)
                     fprintf('... but is so short that isn''t worth analyzing it\n\n');
@@ -161,7 +196,7 @@ while(1)
     end
     
     if DRAW     % drawing recognized signals
-        subplot(3,2,2); hold on;
+        subplot(3,2,2); hold on; %#ok<UNRCH>
         plot(1:tmpBuffSize, emg(:,1), ...
             emgStart:emgEnd, emg(emgStart:emgEnd,1),'r');
         ax = axis;

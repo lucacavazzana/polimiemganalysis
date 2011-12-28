@@ -21,8 +21,9 @@ if aOnly    % compute only weights
     if (nargin == 1 || isempty(a))
         [a, ~] = fastica(emg', 'verbose', 'off');
     else
-        [a, ~] = fastica(emg', 'initguess', a, 'verbose', 'off');
+        [a, ~] = fastica(emg', 'verbose', 'off', 'initguess', a);
     end
+    
     s=[];
     return;
     
@@ -30,14 +31,19 @@ else    % complete analysis
     if (nargin == 1 || isempty(a))
         [s, a, ~] = fastica(emg', 'verbose', 'off');
     else
-        [s, a, ~] = fastica(emg', 'initguess', a, 'verbose', 'off');
+        [s, a, ~] = fastica(emg', 'verbose', 'off', 'initguess', a);
     end
 end
 
-mx = max(abs(a),[],2);
-% for each channel consider only components weighing at least n-percent of
-% the "heaviest" components
-mask = mx(:,[1 1 1])*.6 < abs(a);
-s = ((a.*mask)*s)';
-
+if (size(s,1) == size(emg,2))
+    mx = max(abs(a),[],2);
+    % for each channel consider only components weighing at least n-percent of
+    % the "heaviest" components
+    mask = mx(:,ones(1,size(a,2)))*.6 < abs(a);
+    s = ((a.*mask)*s)';
+else    % TODO: find a solution to fix singularity into EMG cov matrix
+    warning('singularity into emg covariance matrix');
+    s = emg;
 end
+
+end  

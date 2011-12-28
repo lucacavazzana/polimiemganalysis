@@ -1,10 +1,10 @@
 patient = 'asd';
-gesture = '1-1-close_hand';
+gesture = '2-1-open_hand';
 
 f1 = fopen(sprintf('%s\\ch1\\%s.txt',patient,gesture),'r');
 f2 = fopen(sprintf('%s\\ch2\\%s.txt',patient,gesture),'r');
 f3 = fopen(sprintf('%s\\ch3\\%s.txt',patient,gesture),'r');
-raw = fopen(sprintf('%s\\raw.txt',patient),'w');
+raw = fopen(sprintf('%s\\raw2.txt',patient),'w');
 
 n = randi(100);
 

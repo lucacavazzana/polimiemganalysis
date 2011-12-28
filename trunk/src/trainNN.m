@@ -20,17 +20,26 @@ JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) s
 
 ICA = 0;
 
+
+if(nargin<3)
+    burstRatio=1;
+    if(nargin<2)
+        nnn=1;
+    end
+end
+
+fprintf('training %d nets\nusing %.1f/100 of full bursts\n', nnn, burstRatio*100)
+
 if (nargin>3)
     for ii = 1:length(varargin)
         switch(varargin{ii})
             case 'ica'
+                fprintf('ICA selected\n');
                 ICA = 1;
         end
     end
 end
 
-return;
-    
 if(nargin<3)
     burstRatio = 1;
 end
@@ -68,7 +77,7 @@ else
             if(ICA)
                 feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
             else
-                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
+                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'gest', gest{gg,2})];
             end            
         end
     end
@@ -96,7 +105,6 @@ if(nnn>1)
 end
 
 buildResp = eye(length(gest));
-keyboard;
 
 net = patternnet(35);   % FIXME: eventually modify this parameter
 % setup division of data for training, validation, testing

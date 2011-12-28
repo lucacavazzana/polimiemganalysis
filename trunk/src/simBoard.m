@@ -1,33 +1,27 @@
-function [emg] = simBoard()
+function [raw] = simBoard()
 
 global BOARD;
-global pnt;
+global POS;
 
-if isempty(BOARD)
-    tic
-    BOARD(:,3) = convertFile2MAT('asd\\ch3\\1-1-close_hand.txt');
-    BOARD(:,2) = convertFile2MAT('asd\\ch2\\1-1-close_hand.txt');
-    BOARD(:,1) = convertFile2MAT('asd\\ch1\\1-1-close_hand.txt');
-    pnt = 0;
+if(isempty(BOARD))
+    tic;
+    BOARD = fopen('asd\raw.txt');
+    POS = 0;
+    TIME = 0;
+    pause(.05);
 end
 
-if(pnt == size(BOARD,1))
-    error('no more data');
+% elapsed time from last acquisition
+n = round(toc*15*270);  % 270 sample/sec * 15(average) char/sample
+tic;
+% n = 40+randi(10);
+
+fseek(BOARD,POS,'bof');
+raw = fscanf(BOARD, '%c', n);
+POS = ftell(BOARD);
+
+if(isempty(raw))
+    error('NO MORE DATA');
 end
 
-if(pnt<110)
-    n = 10+randi(50);
-else
-    n = ceil(toc*270);  % syms 270 signals per sec
-    tic;    % reset
-end
-
-if(pnt+n>size(BOARD,1))
-    emg = BOARD(pnt+1:end,:);
-    pnt = size(BOARD,1);
-    disp('WARNING, NO MORE BOARD, I''M GONNA CRASH!');
-else
-    emg = BOARD(pnt+1:pnt+n,:);
-    pnt = pnt+n;
-end
 end
