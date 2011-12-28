@@ -53,10 +53,10 @@ switch(sel)
     case 2
         [net tr] = trainNN('asd', 10, .5);
     case 3
-        recogni2ze();
+        recognize();
     case 4
         load('halfNets10.mat', 'net');
-        onlineRecognition(net{1});
+        onlineRecognition(net{1}, 'ica');
     case 5
         load('halfNets10.mat');
         testPrecog('asd', net, tr);

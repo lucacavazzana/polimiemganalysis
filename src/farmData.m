@@ -53,9 +53,10 @@ for gID = 1:nMov
             ' -s ' sprintf('%d', r) ...
             ' -g ' movName{gID}]);
         
-        if(ret~=0)
-            error('Problems acquiring from serial');
-        end
+%         if(ret~=0)
+%             error('Problems acquiring from serial');
+%         end
+        assert(ret==0,'Problems acquiring from serial');
         
         % if true plots the current EMG acqusition
         if PLOT
