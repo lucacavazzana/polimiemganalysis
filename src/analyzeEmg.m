@@ -32,11 +32,11 @@ if(nargin>3)
     end
 end
 
-% FIXME: not so sure is 270
-% 270/2 is the max freq we can see @270 sample/sec. This way we are cutting
+% EMGBoard sample rate: 235Hz (270 on the sheet)
+% 235/2 is the max freq we can see @235 sample/sec. This way we are cutting
 % off 2Hz for signal segmentation
-[nLow,dLow] = butter(2, 0.0148);	% 4/270
-[nHigh,dHigh] = butter(2, 0.0741, 'high');	% 20/270
+[nLow,dLow] = butter(2, 0.017);	% 4/235
+[nHigh,dHigh] = butter(2, 0.0851, 'high');	% 20/235
 
 % preprocessing
 rect = abs(emg-512); % rectification   FIXME: but mean value is around 524
