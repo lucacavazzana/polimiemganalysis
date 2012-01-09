@@ -32,9 +32,9 @@ net = nn.hints(net);
 if net.hint.zeroDelay, nnerr.throw('Network contains a zero-delay loop.'); end
 netStr = struct(net);
 
-% TODO: check if is 270 FOR REAL
-[nLow, dLow] = butter(2, 0.0148);   % 4/270
-[nHigh, dHigh] = butter(2, 0.0741, 'high'); % 20/270
+% effective sample rate: 235Hz (270 on the datasheet)
+[nLow, dLow] = butter(2, 0.017);   % 4/235
+[nHigh, dHigh] = butter(2, 0.085, 'high'); % 20/235
 
 chunk = []; % tmp buffer for parsing
 a = []; % ICA initial guess
