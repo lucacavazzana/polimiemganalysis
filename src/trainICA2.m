@@ -1,6 +1,6 @@
-function [sig, net, trainSet, testSet] = trainICA()
+function [sig, net, trainSet, testSet] = trainICA2()
 %TRAINICA
-%  [SIG TEST] = TRAINICA()
+%  [SIG TEST] = TRAINICA2()
 %
 %   SIG :   source signals
 %  TEST :   test indices
@@ -27,33 +27,21 @@ for gg = 1:length(gest)
     ch3=ch1;
     
     for bb = trn
-        ch1=[ch1,emgs{bb}(1:BURSTLEN,1)];
-        ch2=[ch2,emgs{bb}(1:BURSTLEN,2)];
-        ch3=[ch3,emgs{bb}(1:BURSTLEN,3)];
+        ch1 = [ch1, emgs{bb}(1:BURSTLEN,1)];
+        ch2 = [ch2, emgs{bb}(1:BURSTLEN,2)];
+        ch3 = [ch3, emgs{bb}(1:BURSTLEN,3)];
     end
     
-    [s1, a1, ~] = fastica(ch1', 'verbose', 'off');
-    [s2, a2, ~] = fastica(ch2', 'verbose', 'off');
-    [s3, a3, ~] = fastica(ch3', 'verbose', 'off');
-    
-    [~,mxI] = sort(sum(abs(a1)));
-    mxI = mxI(end-2:end);
-    s1 = sum(s1(mxI,:))';
-    
-    [~,mxI] = sort(sum(abs(a2)));
-    mxI = mxI(end-2:end);
-    s2 = sum(s2(mxI,:))';
-    
-    [~,mxI] = sort(sum(abs(a3)));
-    mxI = mxI(end-2:end);
-    s3 = sum(s3(mxI,:))';
+    s1 = mean(ch1,2);
+    s2 = mean(ch2,2);
+    s3 = mean(ch3,2);
     
     ch = abs([ch1(:), ch2(:), ch3(:)]);
     sig{gg}.mean = mean(ch);
     sig{gg}.std = std(ch);
     sig{gg}.sig = [s1 s2 s3]*diag(sig{gg}.mean);
     
-    trainSet = [trainSet, sort(trn)];	%#ok<AGROW>
+    trainSet = [trainSet, sort(trn)]; %#ok<AGROW>
 end
 
 if (nargout>3)
@@ -62,12 +50,18 @@ if (nargout>3)
     testSet = 1:length(targets); testSet = testSet(j);
 end
 
-% creating NN training set
-for bb = length(trainSet):-1:1
-    feats(:,bb) = icaFeats(emgs{trainSet(bb)}, sig);
-end
 buildTarget = eye(length(gest));
 
+% creating NN training set
+for bb = length(trainSet):-1:1
+    try
+        feats(:,bb) = icaFeats(emgs{trainSet(bb)}, sig);
+    catch e
+        warning('deleting element %d', trainSet(bb));
+        feats(:,bb) = [];
+        trainSet(bb) = [];
+    end
+end
 
 net = patternnet(50);
 net.divideFcn = 'dividerand';	% divide data randomly
