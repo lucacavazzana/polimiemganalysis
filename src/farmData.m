@@ -75,11 +75,7 @@ for gID = 1:nMov
     end
 end
 
-if(ispc())
-    save([patient,'\gest.mat'], 'gest');
-else
-    save([patient,'/gest.mat'], 'gest');
-end
+save([patient,'/gest.mat'], 'gest');
 
 fprintf('%s acquisition complete. Bye bye.\n', patient);
 
