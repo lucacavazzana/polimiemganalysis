@@ -15,7 +15,6 @@ function [nets, trs] = trainNN(patient, nnn, burstRatio, varargin)
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 
-global DBG;    % debug
 JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) saved data and jump to the NN training
 
 ICA = 0;
@@ -53,11 +52,7 @@ if JUSTTRAIN
 else
     
     % loading gesture info
-    if(ispc())
-        load([patient,'\gest.mat']);
-    else
-        load([patient,'/gest.mat']);
-    end
+    load([patient,'/gest.mat']);
     
     feats = cell(size(gest,1),1);
     
@@ -70,7 +65,7 @@ else
             % starting from the last a Nx3 matrix is allocated, so we don't
             % have to resize adding a column every cycle
             for cc=3:-1:1
-                emg(:,cc) = convertFile2MAT(sprintf('%s\\ch%d\\%d-%d-%s.txt', ...
+                emg(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%d-%d-%s.txt', ...
                     patient, cc, gest{gg,1}, rr, gest{gg,2}));
             end
             
@@ -133,9 +128,7 @@ for ii = 1:nnn
         rate = sum(all(buildResp(:,resp)==targets(:,tr.testInd))) / length(tr.testInd);
     end
     
-    if DBG
-        fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);
-    end
+    fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);
     
     nets{ii} = net;
     trs{ii}=tr;

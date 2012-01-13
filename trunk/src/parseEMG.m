@@ -15,7 +15,9 @@ function [ch, rem] = parseEMG(data, rem)
 %  luca.cavazzana@gmail.com
 %  FIXME: update
 
-ds = find(data == 'D');
+try
+
+ds = find(data == 'D'); % Ds indices
 nSets = 0;
 
 if( nargin>1 && ~isempty(rem) ) % if REM exists and is not empty
@@ -32,12 +34,23 @@ if( nargin>1 && ~isempty(rem) ) % if REM exists and is not empty
 end
 
 if(length(ds)>1)
-    for i = 2:length(ds)
+    for ii = 2:length(ds)
         nSets = nSets+1;
-        ch(nSets,:) = sscanf(data(ds(i-1)+2:ds(i)), '%d')';        
+        
+        try
+        ch(nSets,:) = sscanf(data(ds(ii-1)+2:ds(ii)), '%d')';
+        catch e
+            fprintf('--------\nMissing channel? [%d,%d]\n%s\n--------\n', ...
+                ds(ii-1), ds(ii), data(ds(ii-1):ds(ii)));
+            keyboard;
+        end
     end
 end
 
 rem = data(ds(end):end);
+
+catch e
+    keyboard
+end
 
 end

@@ -2,10 +2,12 @@ function [] = onlineRecognition(net, varargin)
 
 clc;
 DBG = 1;
-DRAW = 0;   % visual feedback for debugging
+DRAW = 1;   % visual feedback for debugging
 CMPSIM = 0;
 
-ICA = 0;    % still testing
+ICA = 1;    % still testing
+
+global PORT;  % serial port name
 
 if (nargin>1)
     for ii = 1:length(varargin)
@@ -17,8 +19,23 @@ if (nargin>1)
 end
 
 fclose all;
-global BOARD;    % to reset the symBoard function
-BOARD = [];
+
+%---- OPENING PORT ------------------
+try     % clear all handlers using our port
+    fclose(instrfind({'Port','Status'},{PORT, 'open'}));
+catch e %#ok<NASGU>
+end
+board = serial(PORT, ...
+    'BaudRate', 57600, ...
+    'InputBufferSize',  4590); % >1 sec of data
+fopen(board);
+%------------------------------------
+
+% to reset the simBoard function (when dummy board used)
+% global BOARD;
+% BOARD = [];
+
+
 
 if DRAW
     close all; %#ok<UNRCH>
@@ -45,7 +62,8 @@ emgStart = 1; emgEnd = 0;
 
 % acquiring enough data to allow a first recognition
 while(emgEnd-emgStart<110)
-    [out, chunk] = parseEMG(simBoard(), chunk);
+    [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk); tic;
+%     [out, chunk] = parseEMG(simBoard(), chunk);
     outLen = size(out,1);
     emg(emgEnd+1:emgEnd+outLen,:) = out-512;
     emgEnd = emgEnd+outLen;
@@ -55,12 +73,14 @@ end
 while(1)
     
     % data acquisition
-    try
-        [out, chunk] = parseEMG(simBoard(), chunk);
-    catch e %#ok<NASGU>
-        warning('NO MORE DATA');
-        return;
-    end
+    tic; [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk);
+    
+%     try	% simulated board
+%         [out, chunk] = parseEMG(simBoard(), chunk);
+%     catch e %#ok<NASGU>
+%         warning('NO MORE DATA');
+%         return;
+%     end
     
     outLen = size(out,1);
     
@@ -138,12 +158,12 @@ while(1)
                     tEx = toc;
                 end
                 
-                nnRes = mySim(netStr,feat);
+                nnRes = mySim(netStr, feat);
                 if DBG
                     tNN = toc;
                 end
                 
-                if CMPSIM  % DEBUG: test if mySim gives 
+                if CMPSIM  % DEBUG: test if mySim gives te same result as the original one
                     if(~all(nnRes==net(feat)))
                         save('err.mat','net','netStr','feat');
                     end
