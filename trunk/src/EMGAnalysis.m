@@ -51,15 +51,15 @@ switch(sel)
     case 1
         farmData();
     case 2
-        [net tr] = trainNN('asd', 10, 1);
+        [net tr] = trainNN({'asd','serial/B'}, 10, 1);
     case 3
-        load('halfNets10.mat','net');
+        load('fullNets10AB.mat','net');
         testNet(net{3});
     case 4
-        load('halfNets10.mat', 'net');
+        load('fullNets10AB.mat', 'net');
         onlineRecognition(net{3}, 'ica');
     case 5
-        load('halfNets10.mat');
+        load('fullNets10A.mat');
         testPrecog('asd', net, tr);
     case 6
         web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
