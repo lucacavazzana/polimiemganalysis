@@ -1,4 +1,4 @@
-function [nets, trs] = trainNN(patient, nnn, burstRatio, varargin)
+function [nets, trs] = trainNN(patients, nnn, burstRatio, varargin)
 
 % INPUTS
 %    PATIENT :  patient folder name
@@ -16,8 +16,9 @@ function [nets, trs] = trainNN(patient, nnn, burstRatio, varargin)
 %  luca.cavazzana@gmail.com
 
 JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) saved data and jump to the NN training
-
 ICA = 0;
+SAVERAW = 1;    % save segmented bursts (for further tests)
+
 
 
 if(nargin<3)
@@ -47,36 +48,56 @@ if(nargin<2)
     nnn=1;
 end
 
+if SAVERAW
+    emgs = {};
+    targets = [];
+end
+
+
 if JUSTTRAIN
     load('fullFeats.mat');
 else
     
-    % loading gesture info
-    load([patient,'/gest.mat']);
-    
-    feats = cell(size(gest,1),1);
-    
-    % extracting bursts and features
-    for gg=1:size(gest,1) % for each gesture #ok<USENS>
+    for patient = patients
         
-        for rr=1:gest{gg,3} % for each repetition
-            emg=[];
+        % loading gesture info
+        load([patient{1},'/gest.mat']);
+        
+        feats = cell(size(gest,1),1);
+        
+        % extracting bursts and features
+        for gg=1:size(gest,1) % for each gesture #ok<USENS>
             
-            % starting from the last a Nx3 matrix is allocated, so we don't
-            % have to resize adding a column every cycle
-            for cc=3:-1:1
-                emg(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%d-%d-%s.txt', ...
-                    patient, cc, gest{gg,1}, rr, gest{gg,2}));
+            for rr=1:gest{gg,3} % for each repetition
+                emg=[];
+                
+                % starting from the last a Nx3 matrix is allocated, so we don't
+                % have to resize adding a column every cycle
+                for cc=3:-1:1
+                    emg(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%d-%d-%s.txt', ...
+                        patient{1}, cc, gest{gg,1}, rr, gest{gg,2}));
+                end
+                
+                if ICA
+                    feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
+                else
+                    feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'gest', gest{gg,2})];
+                end
+                
+                if SAVERAW
+                    new = analyzeEmg(emg, 'emg', 1);
+                    emgs = cat(2, emgs, new);
+                    targets = cat(1, targets, gg*ones(length(new),1));
+                end
+                
             end
-            
-            if(ICA)
-                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
-            else
-                feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'gest', gest{gg,2})];
-            end            
         end
     end
-    
+end
+
+if SAVERAW
+    save('newEmgsp.mat','emgs','targets');
+    clear emgs targets;
 end
 
 clear emg;

@@ -3,11 +3,11 @@ function testNet(net)
 close all;
 
 if(~exist('net','var')||isempty(net))
-    load('halfNets10.mat','net');
+    load('fullNets10AB.mat','net');
     net = net{1};
 end
 
-PATIENT = 'serial/D';
+PATIENT = 'serial/C';
 DRAW = 0;
 
 % initializing network struct
@@ -32,7 +32,9 @@ for ii = 1:length(files)
     fprintf(' - Analyzing %s:\n',files(ii).name);
        
     feats = analyzeEmg(emg, 'feats', .5, 'ica');
-    bursts = analyzeEmg(emg, 'emg', .5);
+    if DRAW
+        bursts = analyzeEmg(emg, 'emg', .5);
+    end
         
     for ff = 1:length(feats)
         
