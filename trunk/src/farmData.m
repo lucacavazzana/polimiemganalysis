@@ -14,6 +14,19 @@ global DBG;
 
 PLOT = 1;
 
+
+%---- OPENING PORT ------------------
+try     % clear all handlers using our port
+    fclose(instrfind({'Port','Status'},{PORT, 'open'}));
+catch e %#ok<NASGU>
+end
+board = serial(PORT, ...
+    'BaudRate', 57600, ...
+    'InputBufferSize',  4590); % >1 sec of data
+fopen(board);
+%------------------------------------
+
+
 if DBG;
     patient = 'lol';
     nMov = 3;
@@ -21,13 +34,9 @@ if DBG;
     movName = {'close_hand'; ...
         'open_hand'; ...
         'ext_wrist'};
-else
     
-    %     while(~exist('patient','var') || isempty(patient))
-    %         patient = input('Insert patient name:\n','s');
-    %     end
-    
-    [nMov movName patient] = acqGUI();
+else    % acq GUI
+    [nMov, movName, patient] = acqGUI();
     
     if(exist(patient,'dir') == 7)
         fprintf(' - WARNING: %s folder already exists, could overwrite data\n', patient);
@@ -39,44 +48,63 @@ else
     end
 end
 
+mkdir(patient);
+mkdir([patient,'/ch1']);
+mkdir([patient,'/ch2']);
+mkdir([patient,'/ch3']);
+
 gest = cell(nMov,3);    % {ID, movname, nRep}
 
+global ACQ;
+global THISREP;
+
 for gID = 1:nMov
-    disp('---------------------');
-    fprintf('Gesture %d/%d (%s):\n', gID, nMov, movName{gID});
-    disp('---------------------');
     for r = 1:nRep
-        fprintf('\n -- Repetition %d/%d -- \n', r, nRep);
-        ret = system([SERIALCOMM ' -a -d ' PORT ...
-            ' -p ' patient ...
-            ' -i ' sprintf('%d', gID) ...
-            ' -s ' sprintf('%d', r) ...
-            ' -g ' movName{gID}]);
+        fprintf('------------------------------------------\n');
+        fprintf('Gesture %d/%d (%s), rep %d/%d:\n', gID, nMov, movName{gID}, r, nRep);
         
-%         if(ret~=0)
-%             error('Problems acquiring from serial');
-%         end
-        assert(ret==0,'Problems acquiring from serial');
+        raw = fopen(sprintf('%s/%d-%d-%s.txt',patient,gID,r,movName{gID}), 'w');
+        ch1 = fopen(sprintf('%s/ch1/%d-%d-%s.txt',patient,gID,r,movName{gID}), 'w');
+        ch2 = fopen(sprintf('%s/ch2/%d-%d-%s.txt',patient,gID,r,movName{gID}), 'w');
+        ch3 = fopen(sprintf('%s/ch3/%d-%d-%s.txt',patient,gID,r,movName{gID}), 'w');
         
-        % if true plots the current EMG acqusition
-        if PLOT
+        burstGUI(movName{gID}, r);
+        
+        while THISREP
             
-            f = plotEmgFile(patient, r, gID, movName{gID});
+            chunk = [];
+            fscanf(board, '%c', 100); % flushing
             
-            disp('Press a key to continue...');
-            pause();
-            try
-                close(f);
-            catch e %#ok<NASGU>
+            while ACQ
+                if(board.BytesAvailable)
+                    out = fscanf(board, '%c', 100);
+                    disp(size(out));
+                    [emg, chunk] = parseEMG(out, chunk);
+                    fwrite(raw,out);
+                    fwrite(ch1,emg(:,1));
+                    fwrite(ch2,emg(:,2));
+                    fwrite(ch3,emg(:,3));
+                else
+                    pause(.05);
+                end
             end
+            
+            pause(.1);
         end
         
-        gest(gID,:) = {gID, movName{gID}, nRep};
+        fclose(raw);
+        fclose(ch1);
+        fclose(ch2);
+        fclose(ch3);
+        
     end
 end
 
 save([patient,'/gest.mat'], 'gest');
 
+fclose(board)
+
+fprintf('------------------------------------------');
 fprintf('%s acquisition complete. Bye bye.\n', patient);
 
 end

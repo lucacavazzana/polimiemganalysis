@@ -96,7 +96,7 @@ else
 end
 
 if SAVERAW
-    save('newEmgsp.mat','emgs','targets');
+    save('newEmgs.mat','emgs','targets');
     clear emgs targets;
 end
 

@@ -1,4 +1,4 @@
-function [n, gests, name] = acqGUI
+function [n, gests, name] = acqGUI()
 %GESTGUI    Get gesture names
 %   [N, GESTS, NAME] = ACQGUI() displays a graphical interface where the
 %   user can select the number of gestures N, their name GESTS and the NAME
