@@ -40,7 +40,7 @@ for ii = 1:length(files)
         
         nnRes = mySim(netStr, feats{ff});
         
-        fprintf('--- %s - burst %d/%d ---', files(ii).name, ff, length(feats));
+        fprintf('--- %s - burst %d/%d   ---', files(ii).name, ff, length(feats));
         fprintf('   %.3f', nnRes);
         fprintf('\n');
         fprintf('gesture %d\n', find(nnRes>.5));
