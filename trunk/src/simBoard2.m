@@ -1,5 +1,7 @@
 function [emg] = simBoard2()
 
+% this function simulates the EMG board from a set of parsed emg txt file
+
 global BOARD;
 global pnt;
 

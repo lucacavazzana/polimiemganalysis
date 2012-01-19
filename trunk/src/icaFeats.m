@@ -1,9 +1,12 @@
 function [feats] = icaFeats(x,src)
 %ICAFEATS
+%   classification using GUSSS.
+%   This was a waste of time.
+%
 %     X :   signal to analyze
 %   SRC :   src signals to inject during analysis
 %
-%   OUT :   feats
+%   OUT :   feats (for each signature in src the reciprocal of his weigth into x and the energy difference. The lower, the more similar)
 %
 %  Inspired by:
 %  L. A. Rivera and G. N. DeSouza, "Recognizing hand movements from a
@@ -40,7 +43,7 @@ end
 
 feats(2*CH*gestIt(1),1)=0;
 for gg = gestIt
-	feats(2*CH*(gg-1)+1:2*CH*gg)=[cp{gg}; d{gg}];
+	feats(2*CH*(gg-1)+1:2*CH*gg)=[1/cp{gg}; d{gg}];
 end
 
 end

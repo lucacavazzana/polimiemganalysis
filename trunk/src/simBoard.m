@@ -1,5 +1,7 @@
 function [raw] = simBoard()
 
+% this function simulates the EMG using a raw acquisition txt file
+
 global BOARD;
 global POS;
 

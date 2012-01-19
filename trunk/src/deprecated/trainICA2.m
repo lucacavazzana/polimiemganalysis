@@ -1,8 +1,12 @@
 function [sig, net, trainSet, testSet] = trainICA2()
 %TRAINICA
-%  [SIG TEST] = TRAINICA2()
+%  [SIG, NET, TRAINSET, TESTSET] = TRAINICA()
+%  train a net to classify gestures using GUSSS.
+%  Looks like it doesn't work
 %
 %   SIG :   source signals
+%   NET :   set of trained NN
+% TRAIN :   trian indices
 %  TEST :   test indices
 
 %  By Luca Cavazzana for Politecnico di Milano

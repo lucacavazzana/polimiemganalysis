@@ -2,19 +2,22 @@ function oldFarmData()
 %FARMDATA   Acquires training sets
 %  FARMDATA() saves the acquired values in a subfolder of the current
 %  path, plus a gest.mat file containing gestures name, ID and
-%  #repetitions
+%  #repetitions.
+%  Calls the external serialcomm.exe
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 %  FIXME: update
 
+close all;
+
 global PORT;
 global SERIALCOMM;
-global DBG;
 
+DBG = 0;
 PLOT = 1;
 
-if DBG;
+if ( exist('DBG','var') && DBG )
     patient = 'lol';
     nMov = 3;
     nRep = 3;
@@ -38,16 +41,18 @@ end
 gest = cell(nMov,3);    % {ID, movname, nRep}
 
 for gID = 1:nMov
-    disp('---------------------');
+    fprintf('---------------------\n');
     fprintf('Gesture %d/%d (%s):\n', gID, nMov, movName{gID});
-    disp('---------------------');
+    fprintf('---------------------\n');
     for r = 1:nRep
-        fprintf('\n -- Repetition %d/%d -- \n', r, nRep);
-        ret = system([SERIALCOMM ' -a -d ' PORT ...
-            ' -p ' patient ...
-            ' -i ' sprintf('%d', gID) ...
-            ' -s ' sprintf('%d', r) ...
-            ' -g ' movName{gID}]);
+        fprintf('\n -- %s %d/%d -- \n', movName{gID}, r, nRep);
+        ret = system(sprintf('%s -a -d %s -p %s -i %d -s %d -g %s', ...
+            SERIALCOMM, PORT, patient, gID, r, movName{gID}));
+%         ret = system([SERIALCOMM ' -a -d ' PORT ...
+%             ' -p ' patient ...
+%             ' -i ' sprintf('%d', gID) ...
+%             ' -s ' sprintf('%d', r) ...
+%             ' -g ' movName{gID}]);
         
 %         if(ret~=0)
 %             error('Problems acquiring from serial');
@@ -73,6 +78,6 @@ end
 
 save([patient,'/gest.mat'], 'gest');
 
-fprintf('%s acquisition complete. Bye bye.\n', patient);
+fprintf('\n\n%s acquisition complete. Bye bye.\n', patient);
 
 end
