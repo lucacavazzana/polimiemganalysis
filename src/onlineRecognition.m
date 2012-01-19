@@ -73,7 +73,12 @@ end
 while(1)
     
     % data acquisition
-    tic; [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk);
+    if(board.BytesAvailable)
+        tic; [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk);
+    else
+        pause(.01);
+        continue;
+    end
     
 %     try	% simulated board
 %         [out, chunk] = parseEMG(simBoard(), chunk);
