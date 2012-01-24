@@ -3,12 +3,12 @@ function testNet(net)
 close all;
 
 if(~exist('net','var')||isempty(net))
-    load('fullNets10AB.mat','net');
+    load('net.mat','net');
     net = net{1};
 end
 
-PATIENT = 'serial/C';
-DRAW = 0;
+PATIENT = 'asd';
+DRAW = 1;
 
 % initializing network struct
 net = nn.hints(net);
@@ -34,6 +34,7 @@ for ii = 1:length(files)
     feats = analyzeEmg(emg, 'feats', .5, 'ica');
     if DRAW
         bursts = analyzeEmg(emg, 'emg', .5);
+        drawnow;
     end
         
     for ff = 1:length(feats)
@@ -56,11 +57,11 @@ for ii = 1:length(files)
             plot(bursts{ff}(:,3));
             drawnow;
             
-            pause();
+            pause;
         end
     end
     
-    pause();
+    pause;
 end
 
 end

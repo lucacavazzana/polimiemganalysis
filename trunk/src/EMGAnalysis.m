@@ -26,7 +26,7 @@ end
 if LUCA      % FIXME remove here
     if(ispc())
         PORT = 'COM6';
-        SERIALCOMM = 'C:\Users\luca\workspace\serialComm\Debug\serialComm.exe';
+        SERIALCOMM = 'C:/Users/luca/workspace/serialComm/Debug/serialComm.exe';
     else
         PORT = '/dev/ttyUSB0';
         SERIALCOMM = '/home/luca/workspace/serialComm/Debug/serialComm';
@@ -51,7 +51,7 @@ switch(sel)
     case 1
         oldFarmData();
     case 2
-        [net tr] = trainNN({'asd','serial/B','serial/C'}, 10, 1);
+        [net tr] = trainNN({'asd','serial/B'}, 10, 1);
     case 3
         load('fullNets10AB.mat','net');
         testNet(net{3});
