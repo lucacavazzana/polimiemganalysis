@@ -9,9 +9,13 @@ function port = portGUI()
 
 
 if(ispc())
-    ports = {'COM1','COM2','COM3','COM4','COM5','COM6'};
+    for ii = 1:20
+        ports{ii} = sprintf('COM%d',ii);
+    end
 else
-    ports = {'/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2', '/dev/ttyUSB3'};
+    for ii = 1:10
+        ports{ii} = sprintf('/dev/ttyUSB%d',ii);
+    end
 end
 
 sizeGUI = [200,65];
@@ -45,7 +49,7 @@ set(f, 'Visible','on');
 
 % my default values...
 if(ispc())
-    set(hPorts, 'Value', 6);
+    set(hPorts, 'Value', 6);    % my default port
 else
     set(hPorts, 'Value', 1);
 end
