@@ -1,5 +1,8 @@
 function out = getRaw(EB, w)
+%
 
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 if(EB.ser.BytesAvailable)
     out = fscanf(EB.ser, '%c', EB.ser.BytesAvailable);

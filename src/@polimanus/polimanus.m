@@ -1,5 +1,9 @@
 classdef polimanus < handle
-    
+%
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
+
     properties
         ser         % serial port handler
         port        % port name

@@ -1,10 +1,9 @@
-function status = close(EB)
-%
+function moveClose(PM, s)
+%   perform close hand movement
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 
-fclose(EB.ser);
+PM.move(255, 255, s, s);
 
-status = 1;
 end
