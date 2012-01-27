@@ -1,5 +1,8 @@
 function status = open(PM)
+%   open serial port
 
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 PM.ser = serial(PM.port);
 set(PM.ser, 'BaudRate', 115200);

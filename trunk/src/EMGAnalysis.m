@@ -56,7 +56,7 @@ switch(sel)
         load('fullNets10AB.mat','net');
         testNet(net{3});
     case 4
-        load('fullNets10AB.mat', 'net');
+        load('fullNets10A.mat', 'net');
         onlineRecognition(net{3}, 'ica');
     case 5
         load('fullNets10A.mat')

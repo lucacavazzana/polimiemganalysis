@@ -1,10 +1,9 @@
-function status = close(EB)
+function close(DB)
 %
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 
-fclose(EB.ser);
+disp('do nothing?');    % FIXME
 
-status = 1;
 end

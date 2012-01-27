@@ -1,13 +1,18 @@
 function [] = onlineRecognition(net, varargin)
 
 clc;
-DBG = 1;
+close all;
+fclose all;
+
+% closing all ports
+for ii = instrfind()
+    fclose(ii);
+end
+
+DBG = 2;
 DRAW = 1;   % visual feedback for debugging
-CMPSIM = 0;
 
-ICA = 1;    % still testing
-
-global PORT;  % serial port name
+ICA = 0;
 
 if (nargin>1)
     for ii = 1:length(varargin)
@@ -18,79 +23,60 @@ if (nargin>1)
     end
 end
 
-fclose all;
-
-%---- OPENING PORT ------------------
-try     % clear all handlers using our port
-    fclose(instrfind({'Port','Status'},{PORT, 'open'}));
-catch e %#ok<NASGU>
+% converting to ad-hoc emgnet classificator
+if(strcmp(class(net),'network'))
+    net = emgnet(net);
 end
-board = serial(PORT, ...
-    'BaudRate', 57600, ...
-    'InputBufferSize',  4590); % >1 sec of data
-fopen(board);
+
+%---- OPENING BOARD PORT ------------
+board = emgboard('COM6');
+board.open();
 %------------------------------------
-
-% to reset the simBoard function (when dummy board used)
-% global BOARD;
-% BOARD = [];
-
-
-
-if DRAW
-    close all; %#ok<UNRCH>
-    f = figure;
-    set(f,'Position', get(f,'Position').*[.75 1 1.5 1]);
-    drawnow;
-end
-
-% initializing network struct
-net = nn.hints(net);
-if net.hint.zeroDelay, nnerr.throw('Network contains a zero-delay loop.'); end
-netStr = struct(net);
 
 % effective sample rate: 235Hz (270 on the datasheet)
 [nLow, dLow] = butter(2, 0.017);   % 4/235
 [nHigh, dHigh] = butter(2, 0.085, 'high'); % 20/235
 
-chunk = []; % tmp buffer for parsing
 a = []; % ICA initial guess
 
 tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
-emg = zeros(tmpBuffSize,3);
+emg = zeros(tmpBuffSize,3);     % preallocating space
 emgStart = 1; emgEnd = 0;
 
-% acquiring enough data to allow a first recognition
+if DRAW
+    f = figure;
+    set(f,'Position', get(f,'Position').*[.75 1 1.5 1]);
+    drawnow;
+end
+
+try
+
+% acquiring enough data for a meaningfull first recognition
 while(emgEnd-emgStart<110)
-    [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk); tic;
-%     [out, chunk] = parseEMG(simBoard(), chunk);
+    out = board.getEmg();
     outLen = size(out,1);
     emg(emgEnd+1:emgEnd+outLen,:) = out-512;
     emgEnd = emgEnd+outLen;
-    pause(.05);
+    pause(3/board.sRate);
 end
 
 while(1)
     
     % data acquisition
-    if(board.BytesAvailable)
-        tic; [out, chunk] = parseEMG(fscanf(board, '%c', board.BytesAvailable), chunk);
-    else
-        pause(.01);
-        continue;
+    out = board.getEmg();
+    if DBG
+        tAcq = toc;
     end
     
-%     try	% simulated board
-%         [out, chunk] = parseEMG(simBoard(), chunk);
-%     catch e %#ok<NASGU>
-%         warning('NO MORE DATA');
-%         return;
-%     end
-    
+    if(isempty(out))
+        pause(.001);
+        continue;
+    end
+        
     outLen = size(out,1);
     
-    if(outLen==0)    % you're running too fast, calm down...
-        pause(.025-toc);
+    if(outLen == 0)    % you're running too fast, calm down...
+        pause(3/board.sRate);
         continue;
     end
     
@@ -113,21 +99,25 @@ while(1)
     [heads, tails] = findBurst( filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))) );
     nBursts = length(heads);
     
-    if DBG
+    if DBG>1
         fprintf('- emgStart %d, emgEnd %d, len %d\n', emgStart, emgEnd, emgEnd-emgStart+1);
     end
-    if DRAW     % printing segmentation
-        low = filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))); %#ok<UNRCH>
-        clf;
+    
+    if DRAW
+        low = max(filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))),[],2); %#ok<UNRCH>
+        
+        clf(f);
+        figure(f);
         subplot(3,2,[1 3 5]);
         if(nBursts==0)
-            plot(low(:,1));
+            plot(low);
         else
-            plot(1:length(low), low(:,1), ...
-                heads(1):tails(1), low(heads(1):tails(1),1),'r');
+            plot(1:length(low), low, ...
+                heads(1):tails(1), low(heads(1):tails(1)),'r');
             legend('moving average','found burst');
         end
     end
+    
     
     if(nBursts == 0)    % nothing here, trash it
         emgStart = emgEnd-100;
@@ -163,21 +153,21 @@ while(1)
                     tEx = toc;
                 end
                 
-                nnRes = mySim(netStr, feat);
+                nnRes = sim(net, feat);
                 if DBG
                     tNN = toc;
-                end
-                
-                if CMPSIM  % DEBUG: test if mySim gives te same result as the original one
-                    if(~all(nnRes==net(feat)))
-                        save('err.mat','net','netStr','feat');
-                    end
                 end
                 
                 resp = find(nnRes>.6);
                 fprintf('   %.3f', nnRes);
                 fprintf('\n');
-                if(~isempty(resp))
+                
+                if(strcmp(class(board),'dummyboard'))
+                    for rr = resp'
+                        fprintf('gesture %d (after %.4f s)\n', ...
+                            rr, toc-board.gTime);
+                    end
+                else
                     fprintf('gesture %d\n', resp);
                 end
                 
@@ -185,11 +175,11 @@ while(1)
                     if ICA
                         fprintf(['time from last acquisition: %.3fs ' ...
                             '(ICA: %.3fs, feats: %.3fs, NN: %.3fs)\n\n'], ...
-                            toc, tIca-tAn, tEx-tIca, tNN-tEx);
+                            toc-tAcq, tIca-tAn, tEx-tIca, tNN-tEx);
                     else
                         fprintf(['time from last acquisition: %.3fs ' ...
                             '(feats: %.3fs, NN: %.3fs)\n\n'], ...
-                            toc, tEx-tAn, tNN-tEx);
+                            toc-tAcq, tEx-tAn, tNN-tEx);
                     end
                 end
                 
@@ -221,28 +211,27 @@ while(1)
     end
     
     if DRAW     % drawing recognized signals
-        subplot(3,2,2); hold on; %#ok<UNRCH>
-        plot(1:tmpBuffSize, emg(:,1), ...
-            emgStart:emgEnd, emg(emgStart:emgEnd,1),'r');
-        ax = axis;
-        plot([emgEnd,emgEnd],ax([3,4]),'g');
-        ylabel('Ch1');
-        subplot(3,2,4); hold on;
-        plot(1:tmpBuffSize, emg(:,2),  ...
-            emgStart:emgEnd, emg(emgStart:emgEnd,2),'r');
-        ax = axis;
-        plot([emgEnd,emgEnd],ax([3,4]),'g');
-        ylabel('Ch2');
-        subplot(3,2,6); hold on;
-        plot(1:tmpBuffSize, emg(:,3), ...
-            emgStart:emgEnd, emg(emgStart:emgEnd,3),'r');
-        ax = axis;
-        plot([emgEnd,emgEnd],ax([3,4]),'g');
-        ylabel('Ch3');
+        
+        figure(f);
+        for cc = [1,2,3]
+            subplot(3,2,2*cc); hold on;
+            plot(1:tmpBuffSize, emg(:,cc), ...
+                emgStart:emgEnd, emg(emgStart:emgEnd,cc),'r');
+            ax = axis;
+            plot([emgEnd,emgEnd],ax([3,4]),'g');
+            ylabel(sprintf('Ch%d',cc));
+        end
         drawnow;
         %         pause();
     end
     
 end
+
+
+catch e
+    keyboard;
+end
+
+
 
 end

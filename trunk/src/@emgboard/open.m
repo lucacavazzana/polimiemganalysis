@@ -1,5 +1,8 @@
 function status = open(EB)
+%
 
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 EB.ser = serial(EB.port);
 set(EB.ser, 'BaudRate', 57600);

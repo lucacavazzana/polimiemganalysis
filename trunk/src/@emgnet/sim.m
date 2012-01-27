@@ -1,4 +1,4 @@
-function [Y,Xf,Af,E,perf]=mySim(net,varargin)
+function [Y,Xf,Af,E,perf] = sim(net,varargin)
 %SIM Simulate a neural network.
 %
 %  This is a custom-made time-performance-oriented rewrite of the original
@@ -32,8 +32,10 @@ function [Y,Xf,Af,E,perf]=mySim(net,varargin)
 %
 %  See also SIM, INIT, REVERT, ADAPT, TRAIN
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   Copyright 1990-2010 The MathWorks, Inc.
+%   $Revision: 1.19.2.9.2.1 $
+%   commenting out by Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 % CHECK AND FORMAT ARGUMENTS
 % --------------------------
@@ -101,7 +103,7 @@ Q = 1;
 % SIMULATE NETWORK
 % ----------------
 
-[Y,Xf,Af] = nnsim.y(net,X,Xi,Ai,Q);
+[Y,Xf,Af] = nnsim.y(net.strNet,X,Xi,Ai,Q);
 
 % Optional arguments
 % if nargout >= 4, E = gsubtract(T,Y); end

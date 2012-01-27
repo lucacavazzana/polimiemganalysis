@@ -1,11 +1,20 @@
 classdef emgboard < handle
+%
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
     
     properties
-        port;       % port name
-        ser;        % serial
+        port;       	% port name
+        ser;            % serial
         
-        chunk;      % incomplete sample from last acquisition
+        chunk;          % incomplete sample from last acquisition
     end     % properties
+    
+    properties (Constant)
+        sRate = 240;    % serial sample rate
+    end
+    
     
     methods
         

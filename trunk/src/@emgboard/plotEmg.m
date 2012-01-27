@@ -1,4 +1,8 @@
 function plotEmg(EB)
+%
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 sig = [1 1 1];
 s = 1;

@@ -1,10 +1,9 @@
-function status = close(EB)
-%
+function movePinch(PM, s)
+%   perform pinch movement
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 
-fclose(EB.ser);
+PM.move(1, 255, s, s);
 
-status = 1;
 end

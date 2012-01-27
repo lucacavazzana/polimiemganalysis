@@ -1,5 +1,8 @@
 function move(PM, p1, p2, s1, s2)
+%   perform generic movement
 
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 % formatting input
 mv = 255*ones(1,16);
