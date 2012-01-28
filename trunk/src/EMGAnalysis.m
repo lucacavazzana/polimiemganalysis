@@ -57,7 +57,7 @@ switch(sel)
         testNet(net{3});
     case 4
         load('fullNets10A.mat', 'net');
-        onlineRecognition(net{3}, 'ica');
+        newOnlineRecognition(net{3}, 'ica');
     case 5
         load('fullNets10A.mat')
         testPrecog('asd', net, tr);

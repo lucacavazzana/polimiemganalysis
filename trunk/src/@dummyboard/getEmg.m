@@ -23,7 +23,7 @@ if(nSamples == 0)
 end
 
 if( DB.move == 0)
-    ch = 2*randn(nSamples,3)+512;   % no gestures, generating random noise
+    ch = round(2*randn(nSamples,3))+512;   % no gestures, generating random noise
     return;
     
 else
@@ -41,7 +41,7 @@ else
         DB.iBurst = last;
     else
         % padding with random (eventually 0)
-        ch = [ch; 2*randn(DB.iBurst+nSamples-last,3)+512];
+        ch = [ch; round(2*randn(DB.iBurst+nSamples-last,3))+512];
         % movement complete, reset variables
         DB.move = 0;
         DB.burst = 0;

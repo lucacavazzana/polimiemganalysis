@@ -45,6 +45,7 @@ if(length(ds)>1)
                 '%s\n--------\n'], ...
                 ds(ii-1), ds(ii), data(ds(ii-1):ds(ii)));
             ch(nSets,:)=ch(nSets-1,:);
+            warning('Missing channel');
         end
     end
     
