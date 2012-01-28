@@ -4,13 +4,25 @@ clc;
 close all;
 fclose all;
 
-% closing all ports
-for ii = instrfind()
-    fclose(ii);
+% clear ports if still open (assuming the serial objects were tagged)
+try
+    fclose(instrfind('Tag','EmbBoard'));
+catch e
+end
+try
+    fclose(instrfind('Tag','Polimanus'));
+catch e
 end
 
+
 DBG = 2;
-DRAW = 1;   % visual feedback for debugging
+% visual feedback for debugging. 0 none, 1 emg, 2 emg+filtered burst
+DRAW = 1;
+
+DUMMY = 1;   % use dummy emg board (1) or the real one?
+PM = 0; % 1 if Polimanus is connected
+
+tic
 
 ICA = 0;
 
@@ -29,8 +41,17 @@ if(strcmp(class(net),'network'))
 end
 
 %---- OPENING BOARD PORT ------------
-board = emgboard('COM6');
-board.open();
+if DUMMY
+    board = dummyboard();
+else
+    board = emgboard('COM6');
+end
+board.open('log');
+%---- OPENING POLIMANUS PORT --------
+if PM
+    polim = polimanus();
+    polim.open('log');
+end
 %------------------------------------
 
 % effective sample rate: 235Hz (270 on the datasheet)
@@ -67,12 +88,7 @@ while(1)
     if DBG
         tAcq = toc;
     end
-    
-    if(isempty(out))
-        pause(.001);
-        continue;
-    end
-        
+           
     outLen = size(out,1);
     
     if(outLen == 0)    % you're running too fast, calm down...
@@ -100,10 +116,11 @@ while(1)
     nBursts = length(heads);
     
     if DBG>1
-        fprintf('- emgStart %d, emgEnd %d, len %d\n', emgStart, emgEnd, emgEnd-emgStart+1);
+        fprintf('- emgStart %d, emgEnd %d, len %d\n', ...
+            emgStart, emgEnd, emgEnd-emgStart+1);
     end
     
-    if DRAW
+    if DRAW==2
         low = max(filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))),[],2); %#ok<UNRCH>
         
         clf(f);
@@ -171,6 +188,22 @@ while(1)
                     fprintf('gesture %d\n', resp);
                 end
                 
+                if PM
+                    switch max(resp)
+                        case 1 % close hand
+                            pm.moveClose;
+                            disp('Closing hand');
+                            
+                        case 2 % open hand
+                            pm.moveOpen;
+                            disp('Opening hand');
+                            
+                        case 7 % I know, technically is index... pretend it's pinch
+                            pm.movePinch;
+                            disp('Pinching');
+                    end
+                end
+                
                 if DBG
                     if ICA
                         fprintf(['time from last acquisition: %.3fs ' ...
@@ -212,13 +245,17 @@ while(1)
     
     if DRAW     % drawing recognized signals
         
+        if(DRAW==1)
+            clf(f);
+        end
         figure(f);
         for cc = [1,2,3]
-            subplot(3,2,2*cc); hold on;
+            subplot(3,DRAW,DRAW*cc); hold on;
             plot(1:tmpBuffSize, emg(:,cc), ...
                 emgStart:emgEnd, emg(emgStart:emgEnd,cc),'r');
-            ax = axis;
-            plot([emgEnd,emgEnd],ax([3,4]),'g');
+%             ax = axis;
+            axis([1,tmpBuffSize,-512,512])
+            plot([emgEnd,emgEnd],[-512,512],'g');
             ylabel(sprintf('Ch%d',cc));
         end
         drawnow;
@@ -229,9 +266,9 @@ end
 
 
 catch e
+    getReport(e);
+    disp('EXCEPTION! NOW DEBUG!')
     keyboard;
 end
-
-
 
 end

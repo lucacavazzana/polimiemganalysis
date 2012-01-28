@@ -1,4 +1,4 @@
-function open(DB)
+function open(DB, varargin)
 %  load burst samples and open burst GUI
 %  returns GUI handler
 
