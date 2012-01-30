@@ -38,13 +38,13 @@ end
 while(strcmp(PM.ser.TransferStatus, 'idle') == 0)
     pause(.001);
 end
-fwrite(PM.ser,mv, 'uchar', 'async');
+fwrite(PM.ser, mv, 'uchar', 'async');
 PM.lastSent = mv;
 
 while(strcmp(PM.ser.TransferStatus, 'idle') == 0)
     pause(.001);
 end
-readasync(PM.ser);
+readasync(PM.ser);  % An asynchronous read is already in progress.
 ack = fread(PM.ser, 1, 'uchar');
 
 if(ack ~= rem(sum(mv),256))

@@ -12,7 +12,7 @@ function f = extractFeatures(data)
 % after each iteration
 for ii = size(data,2):-1:1
     % Wavelet Coefficient + SVD
-    asd = cwt(data(:,ii),1:5,'morl');
+    asd = cwt(data(:,ii),1:5,'morl');   % FIXME: unsing db?
     w = svd(asd);
     
     % integral EMG

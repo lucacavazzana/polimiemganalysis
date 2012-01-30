@@ -1,4 +1,4 @@
-classdef emg < handle
+classdef emgsig < handle
 %EMG class for emg signal analysis
 
 %  By Luca Cavazzana for Politecnico di Milano
@@ -6,14 +6,14 @@ classdef emg < handle
     
     properties (SetAccess = protected)
         
-        sRate;          % sampling frequency
+        sRate;                  % sampling frequency
         
-        sig = [];       % samples
-        low;            % lowpass sig
+        sig = [];               % samples
+        low;                    % lowpass sig
         
         nLow;                   % filter coeffs
         dLow;
-        nHigh;asd 
+        nHigh; 
         dHigh;
         
         a = [];
@@ -26,7 +26,7 @@ classdef emg < handle
     
     methods
         
-        function EMG = emg(sRate)
+        function EMG = emgsig(sRate)
             %EMG creates an emg object
             %   EMG(SRATE) creates an EMG object for emg analysis. SRATE is
             %   the sample rate of the signal.
@@ -44,6 +44,9 @@ classdef emg < handle
         function setSignal( EMG, sig )
             %SETSIGNAL sets the signal
             %   replaces the SIG properties with the one provided
+            
+            %  By Luca Cavazzana for Politecnico di Milano
+            %  luca.cavazzana@gmail.com
             
             EMG.sig = sig;
         end

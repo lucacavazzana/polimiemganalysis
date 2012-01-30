@@ -1,4 +1,4 @@
-function [feats] = analyzeEmg(emg, action, burstRatio, varargin)
+function feats = analyzeEmg(emg, action, burstRatio, varargin)
 %ANALYZEEMG
 % INPUT
 %           EMG :	raw emg data (expects a values within 0-1024)
