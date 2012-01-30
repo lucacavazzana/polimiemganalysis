@@ -1,6 +1,14 @@
 function feats = extractFeatures(EMG, varargin)
+%EXTRACTFEATURES extract burst features
+%   This method extracts the features (singular values of cwt, mean value,
+%   integral) of the bursts found with FINDBURSTS
+%
+%   See also FINDBURSTS
 
-nBursts = size(2,EMG.heads);
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
+
+nBursts = size(EMG.heads,2);
 feats = cell(1, nBursts);
 
 if (nBursts == 0)
@@ -17,15 +25,13 @@ end
 
 for bb = 1:nBursts
     
-    if (EMG.tails(bb)-EMG.heads(bb)) < 120
+    if (EMG.tails(bb)-EMG.heads(bb)) < 120  % too small, isn't worth analyzing it
         
-        if ICA  % computing weights speedup next iterations
+        if ICA  % computing weights warmup next iteration
             s = filter(EMG.nHigh, EMG.dHigh, ...
                 EMG.sig(EMG.heads(bb):EMG.tails(bb),:));
-            [~, EMG.a] = ica( s, EMG.a);
+            [~, EMG.a] = ica( s, EMG.a );
         end
-        
-        continue;   % too small, isn't worth analyzing it
         
     else
         s = filter(EMG.nHigh, EMG.dHigh, ...
@@ -36,6 +42,7 @@ for bb = 1:nBursts
         end
         
         feats{bb} = extractFeatures(s);
+        
     end
     
 end

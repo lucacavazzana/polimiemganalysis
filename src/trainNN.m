@@ -19,18 +19,16 @@ JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) s
 ICA = 0;
 SAVERAW = 1;    % save segmented bursts (for further tests)
 
-
-
-if(nargin<3)
-    burstRatio=1;
-    if(nargin<2)
-        nnn=1;
+if(nargin < 3)
+    burstRatio = 1;
+    if(nargin < 2)
+        nnn = 1;
     end
 end
 
-fprintf('training %d nets\nusing %.1f/100 of full bursts\n', nnn, burstRatio*100)
+fprintf('training %d nets\nusing %.1f/100 of full bursts\n', nnn, burstRatio*100);
 
-if (nargin>3)
+if (nargin > 3)
     for ii = 1:length(varargin)
         switch(varargin{ii})
             case 'ica'
@@ -38,14 +36,6 @@ if (nargin>3)
                 ICA = 1;
         end
     end
-end
-
-if(nargin<3)
-    burstRatio = 1;
-end
-
-if(nargin<2)
-    nnn=1;
 end
 
 if SAVERAW

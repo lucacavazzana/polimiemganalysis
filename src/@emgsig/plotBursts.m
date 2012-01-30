@@ -1,4 +1,12 @@
 function plotBursts(EMG)
+%PLOTBURSTS plots found bursts
+%   PLOTBURST plots the emg signal highlighting the bursts found with
+%   FINDBURST.
+%
+%   See also FINDBURSTS
+
+%  By Luca Cavazzana for Politecnico di Milano
+%  luca.cavazzana@gmail.com
 
 nb = EMG.findBursts();
 

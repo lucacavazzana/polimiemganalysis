@@ -52,6 +52,7 @@ switch(sel)
         oldFarmData();
     case 2
         [net tr] = trainNN({'asd','serial/B'}, 10, 1);
+        save('newNets.mat','net','tr');
     case 3
         load('fullNets10AB.mat','net');
         testNet(net{3});

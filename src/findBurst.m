@@ -31,11 +31,10 @@ ii = 2;
 while(ii<ls)
     if(any( (emg(ii,:) > 10) & ...    % signal has to be at least 10
             (emg(ii,:) >= 1.22*intEmg(ii)/ii) ))  % signal greather than movin avg
-        % e se sostituissi la media mobile con quella globale?
         
         prev = max(ii-100, 1);  % shifting back some samples
-        
         next = prev+SAMPLEDUR;
+        
         % FIXME HERE
         if(next>ls)
             head = [head, prev]; %#ok<AGROW>
@@ -64,13 +63,7 @@ while(ii<ls)
         head = [head, prev]; %#ok<AGROW>
         tail = [tail, min(next,ls)]; %#ok<AGROW>
         [~, maxEn] = max(intCh(min(next,ls),:)-intCh(prev,:));
-        try     % FIXME: should be ok now
-            ch = [ch, maxEn]; %#ok<AGROW>
-        catch e     %#ok<NASGU> this is to catch a nasty bug that sometimes appears
-            disp('THE DAMN BUG OCCURED!');
-            save('but.mat');
-            keyboard;
-        end
+        ch = [ch, maxEn]; %#ok<AGROW>
         
         ii = next+100;  % fast forward. No more bursts for at least 100 samples
         
