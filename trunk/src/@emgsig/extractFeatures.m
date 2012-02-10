@@ -5,8 +5,8 @@ function feats = extractFeatures(EMG, varargin)
 %
 %   See also FINDBURSTS
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%	By Luca Cavazzana for Politecnico di Milano
+%	luca.cavazzana@gmail.com
 
 nBursts = size(EMG.heads,2);
 feats = cell(1, nBursts);
@@ -34,6 +34,7 @@ for bb = 1:nBursts
         end
         
     else
+        
         s = filter(EMG.nHigh, EMG.dHigh, ...
             EMG.sig(EMG.heads(bb):EMG.tails(bb),:));
         

@@ -31,22 +31,16 @@ classdef emgsig < handle
             %   EMG(SRATE) creates an EMG object for emg analysis. SRATE is
             %   the sample rate of the signal.
             
-            %  By Luca Cavazzana for Politecnico di Milano
-            %  luca.cavazzana@gmail.com
-            
             EMG.sRate = sRate;
             
-            [EMG.nLow, EMG.dLow] = butter(2, 4/sRate);
-            [EMG.nHigh, EMG.dHigh] = butter(2, 20/sRate, 'high');
+            [EMG.nLow, EMG.dLow] = butter(2, 2 * 2/sRate);  % lowpass @2Hz
+            [EMG.nHigh, EMG.dHigh] = butter(2, 10 * 2/sRate, 'high');  % highpass @10Hz
             
         end
         
         function setSignal( EMG, sig )
             %SETSIGNAL sets the signal
             %   replaces the SIG properties with the one provided
-            
-            %  By Luca Cavazzana for Politecnico di Milano
-            %  luca.cavazzana@gmail.com
             
             EMG.sig = sig;
         end

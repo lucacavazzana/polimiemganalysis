@@ -1,8 +1,8 @@
 classdef emgboard < handle
 %
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
     
     properties
         port;       	% port name

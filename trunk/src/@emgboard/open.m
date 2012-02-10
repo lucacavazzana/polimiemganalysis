@@ -1,8 +1,8 @@
 function status = open(EB, varargin)
 %
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 LOG = 0;
 

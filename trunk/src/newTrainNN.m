@@ -13,8 +13,8 @@ function [nets, trs] = newTrainNN(patients, nnn, burstRatio, varargin)
 %       NETS :  cell array of NN
 %        TRS :  cell array of training records
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%	By Luca Cavazzana for Politecnico di Milano
+%	luca.cavazzana@gmail.com
 
 SAVERAW = 0;
 
@@ -48,9 +48,9 @@ gest = [];
 for ee = parsed'
 
     emg.setSignal(ee{1});
-    tic
+    
     nb = emg.findBursts;     % now find bursts!
-    toc
+    
     % testing
 %     if(nb~=10)
 %         emg.plotBursts;
@@ -62,12 +62,16 @@ for ee = parsed'
         bursts = cat(2, bursts, emg.getBursts);
     end
     
-    feats = cat(2, feats, emg.extractFeatures(ICA*'ica'));
-    gest = cat(2, gest, 1*ones(1,size(emg.heads,2)));  % adding target vector
+    if ICA
+        feats = cat(2, feats, emg.extractFeatures('ica'));
+    else
+        feats = cat(2, feats, emg.extractFeatures());
+    end
+    
+    gest = cat(2, gest, ee{2}*ones(1,size(emg.heads,2)));  % adding target vector
     
 end
 
-return
 feats = cell2mat(feats);
 
 if SAVERAW
@@ -78,6 +82,8 @@ if SAVERAW
         'burstRatio');
     clear 'bursts';
 end
+
+disp('Done parsing, now NN');
 
 % building target matrix
 targets = eye(max(gest));
@@ -114,7 +120,7 @@ for ii = 1:nnn
         
         % test rate
         [~, resp] = max( net(feats(:,tr.testInd)), [],1);
-        rate = sum( resp == gest(tr.testInd) ) / length(tr.testInd)
+        rate = sum( resp == gest(tr.testInd) ) / length(tr.testInd);
     end
     
     fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);

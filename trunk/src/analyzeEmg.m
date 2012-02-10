@@ -15,8 +15,8 @@ function feats = analyzeEmg(emg, action, burstRatio, varargin)
 % OUTPUT
 %         FEATS :   raw emg data or features vector (according to ACTION)
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 PLOT = 0;   % DBG
 
@@ -33,10 +33,10 @@ if(nargin>3)
 end
 
 % EMGBoard sample rate: 235Hz (270 on the sheet)
-% 235/2 is the max freq we can see @235 sample/sec. This way we are cutting
-% off 2Hz for signal segmentation
-[nLow,dLow] = butter(2, 0.017);	% 4/235
-[nHigh,dHigh] = butter(2, 0.0851, 'high');	% 20/235
+% 235/2 is the Nyq freq. This way we are cutting @2Hz for signal segmentation
+% and @10Hz for analysis
+[nLow,dLow] = butter(2, 0.017);	% 2*2/235
+[nHigh,dHigh] = butter(2, 0.0851, 'high');	% 2*10/235
 
 % preprocessing
 rect = abs(emg-512); % rectification   FIXME: but mean value is around 524

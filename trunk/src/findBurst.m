@@ -10,8 +10,8 @@ function [head, tail, ch] = findBurst(emg)
 %      TAIL :   indices where bursts end
 %        CH :   id of the channel with more energy
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 
 head = [];

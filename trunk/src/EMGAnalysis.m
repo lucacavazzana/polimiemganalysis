@@ -1,10 +1,10 @@
 %EMGANALYSIS
-%  bla bla bla.
+%	bla bla bla.
 %
-% requires fastICA (http://research.ics.tkk.fi/ica/fastica/)
+%	requires fastICA (http://research.ics.tkk.fi/ica/fastica/)
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 clear all;
 clc;
@@ -51,14 +51,14 @@ switch(sel)
     case 1
         oldFarmData();
     case 2
-        [net tr] = trainNN({'asd','serial/B'}, 10, 1);
+        [net tr] = newTrainNN('asd', 10, 1);
         save('newNets.mat','net','tr');
     case 3
         load('fullNets10AB.mat','net');
         testNet(net{3});
     case 4
-        load('fullNets10A.mat', 'net');
-        newOnlineRecognition(net{3}, 'ica');
+        load('newNets.mat', 'net');
+        newOnlineRecognition(net{1});
     case 5
         load('fullNets10A.mat')
         testPrecog('asd', net, tr);

@@ -5,9 +5,8 @@ function sig = convertFile2MAT(file)
 %
 %   See also CONVERTALL
 
-%  By Giuseppe Lisi for Politecnico di Milano
-%  beppelisi@gmail.com
-%  8 June 2010
+%   By Giuseppe Lisi for Politecnico di Milano
+%   beppelisi@gmail.com
 
 fid = fopen(file);
 sig = fscanf(fid, '%d', [1 Inf])';

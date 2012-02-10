@@ -1,8 +1,8 @@
 function plotEmg(DB)
-%  plots a random stored burst
+%   plots a random stored burst
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 if(DB.move == 0)
     disp('no gesture selected');
