@@ -1,4 +1,9 @@
 function [] = newOnlineRecognition(net, varargin)
+%
+%   NET : classification net
+
+%	By Luca Cavazzana for Politecnico di Milano
+%	luca.cavazzana@gmail.com
 
 DBG = 1;
 DRAW = 1;   % visual feedback for debugging. 0 none, 1 emg, 2 emg+filtered burst
@@ -83,7 +88,11 @@ while(1)
         
         fprintf('- got %d bursts\n', nBurst);
         
-        feats = signal.extractFeatures();
+        if ICA
+            feats = signal.extractFeatures('ica');
+        else
+            feats = signal.extractFeatures();
+        end
         
         for ff = 1:length(feats)
             
@@ -101,27 +110,29 @@ while(1)
                 if PM
                     switch max(rec)
                         case 1 % close hand
-                            polim.moveClose;
+                            polim.moveClose();
                             disp('Closing hand');
                             
                         case 2 % open hand
-                            polim.moveOpen;
+                            polim.moveOpen();
                             disp('Opening hand');
                             
                         case 7 % I know, technically is index... pretend it's pinch
-                            polim.movePinch;
+                            polim.movePinch();
                             disp('Pinching');
                     end
                 end
             end
         end
-        
+    else
+        rec = 0;
     end
     
     if DRAW
         clf(f);
         figure(f);
         subplot(3,2,[1 3 5]); hold on;
+        title(sprintf('Recognized: %d',rec));
         if(nBurst)
             plot(signal.low(:,signal.ch(end)));
             plot(signal.heads(end):signal.tails(end),...

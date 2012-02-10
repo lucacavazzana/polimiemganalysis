@@ -1,11 +1,12 @@
 function ch = getEmg(EB, w)
 %
-%  BEWARE! Too much time between two serial reading (ie: heavy computation)
-%  could cause to miss some emg sets, crashing this function (due to a
-%  mismatch between REM and the starting chunk of the new acquisition).
+%   BEWARE! Too much time between two serial reading (ie: heavy
+%   computation) could cause to miss some emg sets, crashing this function
+%   (due to a mismatch between REM and the starting chunk of the new
+%   acquisition).
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 if(~exist('w','var'))
     w = 0;

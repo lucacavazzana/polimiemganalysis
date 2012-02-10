@@ -1,9 +1,9 @@
 function open(DB, varargin)
-%  load burst samples and open burst GUI
-%  returns GUI handler
+%   load burst samples and open burst GUI
+%   returns GUI handler
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 load(DB.port);
 DB.emgs = emgs;

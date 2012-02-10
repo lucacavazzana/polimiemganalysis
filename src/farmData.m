@@ -1,13 +1,12 @@
 function farmData()
 %FARMDATA   Acquires training sets
-%  FARMDATA() saves the acquired values in a subfolder of the current
-%  path, plus a gest.mat file containing gestures name, ID and
-%  #repetitions
-%  Uses builtin Matlab serial communication
+%   FARMDATA() saves the acquired values in a subfolder of the current
+%   path, plus a gest.mat file containing gestures name, ID and
+%   #repetitions
+%   Uses builtin Matlab serial communication
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
-%  FIXME: update
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 global PORT;
 global SERIALCOMM;

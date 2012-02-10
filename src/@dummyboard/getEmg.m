@@ -1,8 +1,8 @@
 function ch = getEmg(DB)
 %
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 if(DB.last == 0)
     tic;

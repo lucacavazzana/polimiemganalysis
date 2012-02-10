@@ -1,8 +1,8 @@
 classdef dummyboard < emgboard
-%  extends emg board to simulate emg bursts
+%   extends emg board to simulate emg bursts
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
     
     properties
         emgs;
