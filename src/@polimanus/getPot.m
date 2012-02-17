@@ -1,9 +1,11 @@
 function [res] = getPot(PM)
-%   get potentiometers' values
+%GETPOT get potentiometers' values
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
+
+%% STILL WIP
 while(strcmp(PM.ser.TransferStatus, 'idle') == 0)
     pause(.001);
 end

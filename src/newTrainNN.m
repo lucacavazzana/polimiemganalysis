@@ -1,5 +1,4 @@
-function [nets, trs] = newTrainNN(patients, nnn, burstRatio, varargin)
-
+function [nets, trs] = newTrainNN(patient, nnn, burstRatio, varargin)
 % INPUTS
 %    PATIENT :  patient folder name
 %        NNN :  # of nets to train
@@ -13,11 +12,12 @@ function [nets, trs] = newTrainNN(patients, nnn, burstRatio, varargin)
 %       NETS :  cell array of NN
 %        TRS :  cell array of training records
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 SAVERAW = 0;
 
+% default values
 if(nargin < 3)
     burstRatio = 1;
     if(nargin < 2)
@@ -38,27 +38,27 @@ if (nargin > 3)
     end
 end
 
-parsed = convertAll(patients);
-emg = emgsig(240);
+parsed = convertAll(patient);
+emg = emgsig(emgboard.sRate);  % 237Hz last time I checked
 
 bursts = {};
 feats = {};
 gest = [];
 
 for ee = parsed'
-
+    
     emg.setSignal(ee{1});
     
     nb = emg.findBursts;     % now find bursts!
     
     % testing
-%     if(nb~=10)
-%         emg.plotBursts;
-%         disp([emg.heads; emg.tails]);
-%         keyboard;
-%     end
+    %     if(nb~=10)
+    %         emg.plotBursts;
+    %         disp([emg.heads; emg.tails]);
+    %         keyboard;
+    %     end
     
-	if SAVERAW
+    if SAVERAW
         bursts = cat(2, bursts, emg.getBursts);
     end
     
@@ -121,6 +121,7 @@ for ii = 1:nnn
         % test rate
         [~, resp] = max( net(feats(:,tr.testInd)), [],1);
         rate = sum( resp == gest(tr.testInd) ) / length(tr.testInd);
+        disp(rate);
     end
     
     fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);

@@ -1,10 +1,10 @@
 function nBursts = findBursts(EMG)
 %FINDBURSTS analyze the emg signal to detect muscle activity
 %
-%	See also GETBURSTS, EXTRACTFEATURES, PLOTBURSTS
+%   See also GETBURSTS, EXTRACTFEATURES, PLOTBURSTS
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 SAMPLEDUR = round(EMG.sRate*.05);    % samples for ~.05 sec
 

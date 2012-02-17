@@ -1,6 +1,6 @@
 function c = convertAll(np)
 %CONVERTALL Gets datas from folder
-%   C = CONVERTALL(FOLDER) returns a cell-array containing the data sets
+%   C = CONVERTALL(FOLDER) returns a cell-array containing the signals
 %   parsed from the files in FOLDER and their ID
 %
 %   See also CONVERTFILE2MAT
@@ -22,12 +22,20 @@ for ii = 1:len
     fileName = files(ii).name;
     movement = sscanf(fileName,'%d%*s');    % getting mov number
     
-	data = [];
-    for cc = 3:-1:1                  
-        data(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%s', np, cc, fileName));
+    data = [];
+    
+    try
+        for cc = 3:-1:1
+            data(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%s', np, cc, fileName));
+        end
+    catch err
+        err = addCause(err,  MException('ResultChk:OutOfRange', ...
+            'Unable to add %s/ch%d/%s', np, cc, fileName));
+        throw(err);
     end
+    
     c{ii,1} = data;
-    c{ii,2} = movement;    
+    c{ii,2} = movement;
 end
 
 end

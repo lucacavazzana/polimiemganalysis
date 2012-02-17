@@ -1,12 +1,12 @@
 function feats = extractFeatures(EMG, varargin)
 %EXTRACTFEATURES extract burst features
-%   This method extracts the features (singular values of cwt, mean value,
-%   integral) of the bursts found with FINDBURSTS
+%   This method extracts the features (singular values of cwt, mean and
+%   integral value) of the bursts found with FINDBURSTS
 %
 %   See also FINDBURSTS
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 nBursts = size(EMG.heads,2);
 feats = cell(1, nBursts);
@@ -42,7 +42,7 @@ for bb = 1:nBursts
             [s, EMG.a] = ica( s, EMG.a );
         end
         
-        feats{bb} = extractFeatures(s);
+        feats{bb} = extractFeatures(s, EMG.yWAV, EMG.xWAV);
         
     end
     

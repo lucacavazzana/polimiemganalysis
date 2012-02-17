@@ -20,5 +20,6 @@ ylabel(sprintf('Ch2'));
 subplot(3,1,3);
 plot(ch(:,3));
 ylabel(sprintf('Ch3'));
+drawnow;
 
 end

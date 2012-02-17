@@ -3,7 +3,7 @@
  *
  *  Created on: Nov 8, 2011
  *      Author: Luca Cavazzana
- *        Mail:	luca.cavazzana@gmail.com
+ *        Mail:	luca.cavazzana(at)gmail.com
  *
  *
  * Serial port communication with EMGBoard.

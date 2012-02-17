@@ -1,8 +1,13 @@
 classdef emgsig < handle
 %EMG class for emg signal analysis
+%   EMGSIG(SRATE) returns an object for signal analysis. SRATE is the
+%   sample rate of the acquisition.
+%
+%   See also ADD, CLEARSIGNAL, EXTRACTFEATURES, FINDBURSTS, GETBURSTS,
+%   PLOTSIGNAL
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
     
     properties (SetAccess = protected)
         
@@ -16,7 +21,10 @@ classdef emgsig < handle
         nHigh; 
         dHigh;
         
-        a = [];
+        a = [];                 % ica weights
+        
+        yWAV;                   % wavelet
+        xWAV;
         
         heads = [];
         tails = [];
@@ -33,8 +41,12 @@ classdef emgsig < handle
             
             EMG.sRate = sRate;
             
+            % sRate/2 is the Nyquist frequency
             [EMG.nLow, EMG.dLow] = butter(2, 2 * 2/sRate);  % lowpass @2Hz
             [EMG.nHigh, EMG.dHigh] = butter(2, 10 * 2/sRate, 'high');  % highpass @10Hz
+            
+            % building wavelet
+            [EMG.yWAV, EMG.xWAV] = intwave('db4',10);
             
         end
         

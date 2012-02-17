@@ -1,5 +1,11 @@
 classdef dummyboard < emgboard
-%   extends emg board to simulate emg bursts
+%DUMMYBOARD extends emg board to simulate emg bursts
+%   DUMMYBOARD(SRC) returns an object which simulates an serial emg board.
+%   It will output random noise to simulate muscle ianctive state, and
+%   pre-recorded signals when selected from the interface. Pre recorded
+%   signals are stored into a .mat file whose path is specified by SRC.
+%
+%   See also CLOSE, DUMMYBOARDGUI, GETEMG, OPEN, PLOTEMG
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
