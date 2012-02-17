@@ -1,6 +1,5 @@
 function open(DB, varargin)
-%   load burst samples and open burst GUI
-%   returns GUI handler
+%OPEN load burst samples and open burst GUI
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

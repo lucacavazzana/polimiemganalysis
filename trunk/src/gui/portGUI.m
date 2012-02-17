@@ -5,8 +5,6 @@ function port = portGUI()
 
 %	By Luca Cavazzana for Politecnico di Milano
 %	luca.cavazzana@gmail.com
-%	13 November 2011
-
 
 if(ispc())
     for ii = 1:20
@@ -26,7 +24,7 @@ f = figure('Visible', 'off', ...
     'Menubar', 'None', ...
     'Resize', 'off', ...
     'Position',[100, 100, sizeGUI]);
-    
+
 
 hText = uicontrol('Style', 'text', ...
     'String', 'Port' ,'Position', [10, 45, 40, 18]);

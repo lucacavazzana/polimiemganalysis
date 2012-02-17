@@ -1,5 +1,7 @@
 function ch = getEmg(DB)
-%
+%GETEMG returns simulated emg signal
+%   CH = GETEMG() returns the simulated emg signal as Nx3 matrix, where N
+%   is signal length.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

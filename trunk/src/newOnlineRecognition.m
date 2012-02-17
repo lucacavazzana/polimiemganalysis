@@ -1,5 +1,5 @@
 function [] = newOnlineRecognition(net, varargin)
-%
+%ONLINERECOGNITION
 %   NET : classification net
 
 %	By Luca Cavazzana for Politecnico di Milano

@@ -1,8 +1,12 @@
 classdef polimanus < handle
+%POLIMANUS class to handle Polimanus exoskeleton
+%   POLIMANUS(PORT) creates an handler for the Polimanus exoskeleton on
+%   port PORT.
 %
+%   See also CHANGEPORT, CLOSE, MOVE, MOVECLOSE, MOVEOPEN, MOVEPINCH, OPEN
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
     properties
         ser         % serial port handler

@@ -1,12 +1,11 @@
-function [n, gests, name] = acqGUI()
+function [n, rep, gests, name] = acqGUI()
 %GESTGUI    Get gesture names
-%   [N, GESTS, NAME] = ACQGUI() displays a graphical interface where the
-%   user can select the number of gestures N, their name GESTS and the NAME
-%   of the patient.
+%   [N, NREP, GESTS, NAME] = ACQGUI() displays a graphical interface where
+%   the user can select the number of gestures N, the number of repetitions
+%   NREP, their name GESTS and the NAME of the patient.
 
 %	By Luca Cavazzana for Politecnico di Milano
 %	luca.cavazzana@gmail.com
-%	15 November 2011
 
 % default values
 n = 7;
@@ -33,23 +32,30 @@ for i = 1:7
         'String', gests{i} ,'Position', [10, 220-i*30, 100, 20]);
 end
 
-okButt = uicontrol('Style', 'pushbutton', ...
-    'String', 'OK' ,'Position', [120, 10, 100, 25], ...
-    'CallBack', {@okCallback});
-
-numBox = uicontrol('Style', 'popupmenu', ...
-    'String', (2:7)' ,'Position', [130, 45, 80, 20], 'Value', 6, ...
-    'Callback', {@selCallback});
-
-numLab = uicontrol('Style', 'text', ...
-    'String', '#gestures' ,'Position', [130, 65, 80, 18]);
+% second column
 
 patLabel = uicontrol('Style', 'text', ...
     'String', 'Patient name' ,'Position', [120, 190, 100, 15]);
 
 patBox = uicontrol('Style', 'edit', ...
-    'String', 'lol' ,'Position', [120, 170, 100, 20]);
+    'String', 'newAcq' ,'Position', [120, 170, 100, 20]);
 
+numLab = uicontrol('Style', 'text', ...
+    'String', '#gestures' ,'Position', [130, 105, 80, 18]);
+
+numBox = uicontrol('Style', 'popupmenu', ...
+    'String', (2:7)' ,'Position', [130, 85, 80, 20], 'Value', 1, ...
+    'Callback', {@selCallback});
+
+repLab = uicontrol('Style', 'text', ...
+    'String', '#repetitions' ,'Position', [130, 55, 80, 18]);
+
+repBox = uicontrol('Style', 'edit', ...
+    'String', '2' ,'Position', [130, 35, 80, 20]);
+
+okButt = uicontrol('Style', 'pushbutton', ...
+    'String', 'OK' ,'Position', [120, 10, 100, 25], ...
+    'CallBack', {@okCallback});
 
 movegui(f,'center');
 set(f,'Visible','on');
@@ -79,7 +85,14 @@ close(f);
         
         for j=1:length(gests)
             gests{j}(gests{j}==' ')='_';
-        end      
+        end
+        
+        
+        rep = str2num(get(repBox, 'String')); %#ok<ST2NM>
+        if(rep<1)
+            disp(' - Warning: invalid repetition number');
+            return;
+        end
         
         uiresume(gcf);
     end

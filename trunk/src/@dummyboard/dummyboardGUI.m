@@ -1,5 +1,5 @@
 function dummyboardGUI(DB)
-%
+%DUMMYBOARDGUI gui to select burst type
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

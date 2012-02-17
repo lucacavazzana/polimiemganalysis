@@ -1,11 +1,12 @@
 function port = burstGUI(gName,rep)
-%BURSTGUI
+%BURSTGUI 
 
-%	By Luca Cavazzana for Politecnico di Milano
-%	luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 global ACQ;
 global THISREP;
+
 ACQ = 0;
 THISREP = 1;
 
@@ -16,8 +17,8 @@ f = figure('Visible', 'off', ...
     'NumberTitle', 'off', ...
     'Menubar', 'None', ...
     'Resize', 'off', ...
-    'Position',[100, 100, sizeGUI]);
-    
+    'Position',[10, 10, sizeGUI]);
+
 hGest = uicontrol('Style', 'text',...
     'String', sprintf('%s, %d', gName, rep), 'Position', [10, 65, 150, 20]);
 
@@ -35,7 +36,7 @@ hDone = uicontrol('Style', 'pushbutton', ...
     'String', 'Done', 'Position', [90,10,70,25], ...
     'Callback', {@exitCallback});
 
-movegui(f,'center');
+% movegui(f,'center');
 set(f, 'Visible','on');
 
 drawnow;
@@ -47,9 +48,10 @@ drawnow;
             set(hAct,'BackgroundColor','red');
             ACQ = 0;
         else
-            set(switchButt,'String','Acq');
-            set(hAct,'BackgroundColor','green');
-            set(hAct,'String','ACQUIRING');
+            set(switchButt, 'String', 'Acq');
+            set(switchButt, 'Enable', 'off');
+            set(hAct, 'BackgroundColor', 'green');
+            set(hAct, 'String', 'ACQUIRING');
             ACQ = 1;
         end
     end

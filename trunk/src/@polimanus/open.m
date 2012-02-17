@@ -1,8 +1,8 @@
 function status = open(PM, varargin)
-%   open serial port
+%OPEN open serial port
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 LOG = 0;
 
@@ -23,11 +23,22 @@ set(PM.ser, 'RecordName', 'polimanus.txt');
 set(PM.ser, 'RecordDetail', 'verbose');
 set(PM.ser, 'Tag', 'Polimanus');
 
-fopen(PM.ser);
+try
+    fopen(PM.ser);
+    
+catch e
+    instr = instrfind({'Status','Tag'},{'open','Polimanus'});
+    if(~isempty(instr))
+        fclose(instr);
+        delete(instr);
+    end
+    fopen(PM.ser);
+    % if another exc is thrown, manually handle it...
+end
 
 if LOG
     record(PM.ser,'on');
 end
 
-status = 0;
+status = 1;
 end

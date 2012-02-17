@@ -1,5 +1,7 @@
-function plotEmg(EB)
-%
+function plotEmg(EB, fi)
+%PLOTEMG plot current signal
+%   PLOTEMG plots the current signal (in red the latest acquisition). If
+%   the handler is specified plots in the associated window.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
@@ -7,11 +9,13 @@ function plotEmg(EB)
 sig = [1 1 1];
 s = 1;
 
-fi = figure;
+if(nargin == 1)
+    fi = figure;
+end
+
 while(1)
     
     emg = EB.getEmg(1);
-    
     e = size(emg,1);
     
     if(s > 100)
@@ -23,11 +27,13 @@ while(1)
     s = size(sig,1);
     
     clf(fi);
-    for ii = 1:3
-        subplot(3,1,ii);
-        plot(1:s-e,sig(1:s-e,ii)); hold on;
-        plot(s-e:s,sig(s-e:s,ii),'r');
-        ylabel(sprintf('Ch%d',ii));
+    for cc = 1:3
+        subplot(3,1,cc);
+        plot(1:s-e,sig(1:s-e,cc)); hold on;
+        plot(s-e:s,sig(s-e:s,cc),'r');
+        ylabel(sprintf('Ch%d',cc));
+        xlabel('samples');
+        axis([1,s,-512,512]);
     end
     drawnow;
 end

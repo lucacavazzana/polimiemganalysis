@@ -1,8 +1,11 @@
 function move(PM, p1, p2, s1, s2)
-%   perform generic movement
+%MOVE perform generic movement
+%   MOVE(P1,P2,S1,S2) commands a generic movement, moving servo1 to 180/P1
+%   degree and servo2 to 180/P2 degree with speeds S1 and S2. All
+%   parameters are values within 0 and 255.
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 % formatting input
 mv = 255*ones(1,16);

@@ -1,8 +1,9 @@
 function moveOpen(PM, s)
-%   perform open hand movement
+%MOVEOPEN perform open hand movement
+%   MOVEOPEN(S) commands hand opening at speed S (within 0 an 255).
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 if ~exist('s','var')
     s = 255;
