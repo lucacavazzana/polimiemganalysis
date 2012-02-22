@@ -70,12 +70,14 @@ classdef emgboard < handle
                     return;
                     
                 else
-                    ch(size(ds,2),3) = 0;    % preallocate #D
+                    ch = zeros(size(ds,2),3);	% preallocate #D
                     chunk = [chunk, raw(1:ds(1))];
                     ch(1,:) = sscanf(chunk(3:end), '%d')';
                     nSets = 1;
                 end
                 
+            else
+                ch = zeros(size(ds,2)-1,3);    % preallocate #D. (needs at least 2xD)
             end
             
             

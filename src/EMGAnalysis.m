@@ -66,11 +66,11 @@ switch(sel)
         
     case 4  % online classification
         load(sprintf('%s/net.mat', folder),'nets');
-        newOnlineRecognition(net{1});
+        onlineRecognition(nets{1}, 'plot');
         
     case 5  % test recognition rate 
         load(sprintf('%s/net.mat', folder),'nets');
-        testPrecog('asd', nets, trs);
+        testPrecog('asd', nets{1}, trs);
         
     case 6
         web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
