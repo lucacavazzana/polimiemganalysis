@@ -1,24 +1,25 @@
-function [nets, trs] = trainNN(patients, nnn, burstRatio, varargin)
-
+function [nets, trs] = newTrainNN(folder, nnn, burstRatio, varargin)
 % INPUTS
-%    PATIENT :  patient folder name
+%     FOLDER :  patient folder name
 %        NNN :  # of nets to train
 % BURSTRATIO :  % of the burst to use
+%
 % OPTIONAL
 %      'ica' :  performs indipendent component analysis before feature
 %               extraction
+%     'plot' :  plots segmented signal for debug
 %
 % OUTPUTS
 %       NETS :  cell array of NN
 %        TRS :  cell array of training records
 
-%  By Luca Cavazzana for Politecnico di Milano
-%  luca.cavazzana@gmail.com
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
-JUSTTRAIN = 0; % for debugging, if =1 skip the analysis, load the (previously) saved data and jump to the NN training
-ICA = 0;
-SAVERAW = 1;    % save segmented bursts (for further tests)
+PLOT = 0;
+fig = 0;
 
+% default values
 if(nargin < 3)
     burstRatio = 1;
     if(nargin < 2)
@@ -28,89 +29,78 @@ end
 
 fprintf('training %d nets\nusing %.1f/100 of full bursts\n', nnn, burstRatio*100);
 
+ICA = 0;
 if (nargin > 3)
     for ii = 1:length(varargin)
         switch(varargin{ii})
             case 'ica'
                 fprintf('ICA selected\n');
                 ICA = 1;
+                
+            case 'plot'
+                PLOT = 1;
         end
     end
 end
 
-if SAVERAW
-    emgs = {};
-    targets = [];
-end
+parsed = convertAll(folder);
+emg = emgsig(emgboard.sRate);  % 237Hz last time I checked
 
+bursts = {};
+feats = {};
+gest = [];
 
-if JUSTTRAIN
-    load('fullFeats.mat');
-else
+for ee = parsed'
     
-    for patient = patients
-        
-        % loading gesture info
-        load([patient{1},'/gest.mat']);
-        
-        feats = cell(size(gest,1),1);
-        
-        % extracting bursts and features
-        for gg=1:size(gest,1) % for each gesture #ok<USENS>
-            
-            for rr=1:gest{gg,3} % for each repetition
-                emg=[];
-                
-                % starting from the last a Nx3 matrix is allocated, so we don't
-                % have to resize adding a column every cycle
-                for cc=3:-1:1
-                    emg(:,cc) = convertFile2MAT(sprintf('%s/ch%d/%d-%d-%s.txt', ...
-                        patient{1}, cc, gest{gg,1}, rr, gest{gg,2}));
-                end
-                
-                if ICA
-                    feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'ica', 'gest', gest{gg,2})];
-                else
-                    feats{gg} = [feats{gg} analyzeEmg(emg, 'feats', burstRatio, 'gest', gest{gg,2})];
-                end
-                
-                if SAVERAW
-                    new = analyzeEmg(emg, 'emg', 1);
-                    emgs = cat(2, emgs, new);
-                    targets = cat(1, targets, gg*ones(length(new),1));
-                end
-                
-            end
+    emg.setSignal(ee{1});
+    
+    nb = emg.findBursts;     % now find bursts!
+    
+    if PLOT
+        if fig == 0
+            fig = figure;
         end
+        emg.plotSignal(fig);
+        pause();
     end
+    
+    % testing
+    %     if(nb~=10)
+    %         emg.plotBursts;
+    %         disp([emg.heads; emg.tails]);
+    %         keyboard;
+    %     end
+    
+    bursts = cat(2, bursts, emg.getBursts);
+    
+    if ICA
+        feats = cat(2, feats, emg.extractFeatures('ica'));
+    else
+        feats = cat(2, feats, emg.extractFeatures());
+    end
+    
+    gest = cat(2, gest, ee{2}*ones(1,size(emg.heads,2)));  % adding target vector
+    
 end
 
-if SAVERAW
-    save('newEmgs.mat','emgs','targets');
-    clear emgs targets;
+if PLOT
+    close(fig)
 end
 
-clear emg;
+feats = cell2mat(feats);
 
-% training the net now
-inputs = cell2mat([feats{:}]);
-targets = zeros(length(feats), size(inputs,2));
+disp('Done parsing, now NN');
 
 % building target matrix
-ii = 0;
-for gg = 1:length(feats)
-    nSam = size(feats{gg},2);
-    
-    targets(gg, ii+1:ii+nSam) = 1;
-    ii = ii+nSam;
-end
+targets = eye(max(gest));
+targets = targets(:,gest);
 
+
+% NOW THE NN PART
 if(nnn>1)
     nets{nnn} = 0;  % preallocating
     trs{nnn} = 0;
 end
-
-buildResp = eye(length(gest));
 
 net = patternnet(35);   % FIXME: eventually modify this parameter
 % setup division of data for training, validation, testing
@@ -132,11 +122,12 @@ for ii = 1:nnn
         net = init(net);
         
         % train the network
-        [net, tr] = train(net,inputs,targets);
+        [net, tr] = train(net, feats, targets);
         
         % test rate
-        [~, resp] = max(net(inputs(:,tr.testInd)),[],1);
-        rate = sum(all(buildResp(:,resp)==targets(:,tr.testInd))) / length(tr.testInd);
+        [~, resp] = max( net(feats(:,tr.testInd)), [],1);
+        rate = sum( resp == gest(tr.testInd) ) / length(tr.testInd);
+%         disp(rate);
     end
     
     fprintf('net %d/%d - success rate: %.3f\n', ii, nnn, rate);
@@ -144,5 +135,21 @@ for ii = 1:nnn
     nets{ii} = net;
     trs{ii}=tr;
 end
+
+% dumping on disk
+name = sprintf('%s/newNets.mat', folder);
+ii = 1;
+while(exist(name,'file'))
+    name = sprintf('%s/newNets%d.mat', folder, ii);
+    ii = ii+1;
+end
+
+save(name, ...
+    'bursts', ...
+    'feats', ...
+    'gest', ...
+    'burstRatio', ...
+    'nets', ...
+    'trs');
 
 end

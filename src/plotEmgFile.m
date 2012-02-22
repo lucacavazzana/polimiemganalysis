@@ -1,7 +1,9 @@
 function f = plotEmgFile(patient, seq, gesID, gesName)
 % PLOTEMGFILE plots EMG data from file
 %   F = PLOTEMGFILE(FOLDER, SEQ, GESID, GESNAME) plots EMG signal saved in
-%   files FOLDER/ch#/GESID-SEQ-GESNAME.txt and returns figure hadle.
+%   files FOLDER/ch#/GESID-SEQ-GESNAME.txt and returns figure hadle F.
+
+%   TAG: utility
 
 %	By Luca Cavazzana for Politecnico di Milano
 %	luca.cavazzana@gmail.com

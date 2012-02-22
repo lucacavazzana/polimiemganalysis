@@ -1,10 +1,17 @@
-patient = 'asd';
-gesture = '2-1-open_hand';
+function remakeRaw(patient, gesture)
+%REMAKERAW rebuilds raw input from parsed channels
+%   REMAKERAW(PATIENT, FILE) rebuilds the raw input file (as outputted from
+%   the EMG board) from the samples stored into ./PATIENT/ch#/FILE
 
-f1 = fopen(sprintf('%s\\ch1\\%s.txt',patient,gesture),'r');
-f2 = fopen(sprintf('%s\\ch2\\%s.txt',patient,gesture),'r');
-f3 = fopen(sprintf('%s\\ch3\\%s.txt',patient,gesture),'r');
-raw = fopen(sprintf('%s\\raw2.txt',patient),'w');
+%   TAG: utility
+
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
+
+f1 = fopen(sprintf('%s/ch1/%s.txt',patient,gesture),'r');
+f2 = fopen(sprintf('%s/ch2/%s.txt',patient,gesture),'r');
+f3 = fopen(sprintf('%s/ch3/%s.txt',patient,gesture),'r');
+raw = fopen(sprintf('%s/raw2.txt',patient),'w');
 
 n = randi(100);
 
@@ -29,3 +36,5 @@ fclose(f1);
 fclose(f2);
 fclose(f3);
 fclose(raw);
+
+end

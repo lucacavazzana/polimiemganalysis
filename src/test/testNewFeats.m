@@ -1,5 +1,8 @@
 function testNewFeats()
-% new features
+%   test using different features
+
+%   TAG: test
+
 close all;
 clear all;
 

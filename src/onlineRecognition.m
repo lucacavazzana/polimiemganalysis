@@ -66,7 +66,7 @@ emgStart = 1; emgEnd = 0;
 
 if DRAW
     f = figure;
-    set(f,'Position', get(f,'Position').*[.75 1 1.5 1]);
+    set(f,'Position', get(f,'Position').*[0.75 1 1.5 1]);
     drawnow;
 end
 
@@ -175,7 +175,7 @@ while(1)
                     tNN = toc;
                 end
                 
-                resp = find(nnRes>.6);
+                resp = find(nnRes>0.6);
                 fprintf('   %.3f', nnRes);
                 fprintf('\n');
                 

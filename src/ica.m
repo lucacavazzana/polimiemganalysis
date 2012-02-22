@@ -39,7 +39,7 @@ if (size(s,1) == size(emg,2))
     mx = max(abs(a),[],2);
     % for each channel consider only components weighing at least n-percent of
     % the "heaviest" components
-    mask = mx(:,ones(1,size(a,2)))*.6 < abs(a);
+    mask = mx(:,ones(1,size(a,2)))*0.6 < abs(a);
     s = ((a.*mask)*s)';
 else    % TODO: find a solution to fix singularity into EMG cov matrix
     warning('singularity into emg covariance matrix');
