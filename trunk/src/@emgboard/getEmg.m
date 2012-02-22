@@ -19,55 +19,17 @@ if(~exist('w','var'))
 end
 
 data = EB.getRaw(w);
-ch = zeros(0,3);
 
 if( isempty(data) )
     return;
 end
 
-% write on file
-if EB.dump~=-1
-    fprintf(EB.dump);
+% write log on file
+if EB.dumpH~=-1
+    fprintf(EB.dumpH, data);
 end
 
-ds = find(data == 'D'); % Ds indices
-nSets = 0;
-
-if( ~isempty(EB.chunk) ) % if chunk is not empty
-    if(isempty(ds)) % not even a single complete set
-        EB.chunk = [EB.chunk, data];
-        return;
-    else
-        ch(size(ds,2),3) = 0;    % preallocate #D
-        EB.chunk = [EB.chunk, data(1:ds(1))];
-        ch(1,:) = sscanf(EB.chunk(3:end), '%d')';
-        nSets = 1;
-    end
-end
-
-if(length(ds)>1)
-    for ii = 2:length(ds)
-        nSets = nSets+1;
-        
-        out = sscanf(data(ds(ii-1)+2:ds(ii)), '%d')';
-        if (size(out,2)==3)
-            ch(nSets,:) = out;
-            
-        else % FIXME: BUGGED SERIAL BOARD?
-            
-            fprintf(['--------\n' ...
-                'Bad serial output format [%d,%d]\n' ...
-                '%s\n--------\n'], ...
-                ds(ii-1), ds(ii), data(ds(ii-1):ds(ii)));
-            ch(nSets,:)=ch(nSets-1,:);  % dunno how to manage here... info is lost anyway...
-            warning('Bad serial output format');
-            
-        end
-        
-    end
-    
-    EB.chunk = data(ds(end):end);
-    
-end
+% parsing
+[ch, EB.chunk]= emgboard.parser(data, EB.chunk);
 
 end
