@@ -14,7 +14,7 @@ function [ch data] = getEmg(EB, w)
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
 
-if(~exist('w','var'))
+if(~(nargin>1 && exist('w','var')))
     w = 0;
 end
 

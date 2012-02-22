@@ -1,8 +1,32 @@
 function [] = onlineRecognition(net, varargin)
+%ONLINERECOGNITION
+%   NET : classification net
+
+%	By Luca Cavazzana for Politecnico di Milano
+%	luca.cavazzana@gmail.com
+
+DBG = 1;
+DRAW = 0;   % visual feedback for debugging. 0 none, 1 emg, 2 emg+filtered burst
+DUMMY = 0;	% use dummy emg board (1) or the real one?
+PM = 0;     % 1 if Polimanus is connected
 
 clc;
 close all;
 fclose all;
+
+for ii = 1:length(varargin)
+    switch(varargin{ii})
+        case 'plot'
+            DRAW = 1;
+            
+    end
+end
+
+% converting to ad-hoc emgnet classificator
+if(strcmp(net,'network'))
+    net = emgnet(net);
+    assert(strcmp(net,'emgnet'));
+end
 
 % clear ports if still open (assuming the serial objects were tagged)
 try
@@ -14,18 +38,9 @@ try
 catch e
 end
 
-
-DBG = 2;
-% visual feedback for debugging. 0 none, 1 emg, 2 emg+filtered burst
-DRAW = 1;
-
-DUMMY = 1;   % use dummy emg board (1) or the real one?
-PM = 0; % 1 if Polimanus is connected
-
 tic
 
 ICA = 0;
-
 if (nargin>1)
     for ii = 1:length(varargin)
         switch(varargin{ii})
@@ -35,16 +50,17 @@ if (nargin>1)
     end
 end
 
-% converting to ad-hoc emgnet classificator
-if(strcmp(class(net),'network'))
-    net = emgnet(net);
-end
-
 %---- OPENING BOARD PORT ------------
 if DUMMY
     board = dummyboard();
 else
-    board = emgboard('COM6');
+    dump = 'dumpboard.txt';
+    ii = 0;
+    while(exist(dump,'file'))
+        ii = ii+1;
+        dump = sprintf('dumpboard%d.txt', ii);
+    end
+    board = emgboard('COM6', dump);
 end
 board.open('log');
 %---- OPENING POLIMANUS PORT --------
@@ -54,41 +70,26 @@ if PM
 end
 %------------------------------------
 
-% effective sample rate: 235Hz (270 on the datasheet)
-[nLow, dLow] = butter(2, 0.017);   % 4/235
-[nHigh, dHigh] = butter(2, 0.085, 'high'); % 20/235
-
-a = []; % ICA initial guess
-
-tmpBuffSize = 540; % space for 2 sec of acquisition (eventually resized)
-emg = zeros(tmpBuffSize,3);     % preallocating space
-emgStart = 1; emgEnd = 0;
+signal = emgsig(emgboard.sRate);
 
 if DRAW
     f = figure;
-    set(f,'Position', get(f,'Position').*[0.75 1 1.5 1]);
-    drawnow;
 end
 
-try
-
-% acquiring enough data for a meaningfull first recognition
-while(emgEnd-emgStart<110)
+while(size(signal.sig,1) < 110)
     out = board.getEmg();
-    outLen = size(out,1);
-    emg(emgEnd+1:emgEnd+outLen,:) = out-512;
-    emgEnd = emgEnd+outLen;
+    signal.add(out);
     pause(3/board.sRate);
 end
 
 while(1)
     
-    % data acquisition
     out = board.getEmg();
+    
     if DBG
         tAcq = toc;
     end
-           
+    
     outLen = size(out,1);
     
     if(outLen == 0)    % you're running too fast, calm down...
@@ -96,179 +97,87 @@ while(1)
         continue;
     end
     
-    % messy way to avoid costly matrix resizing
-    newEnd = emgEnd+outLen;
-    if(newEnd <= tmpBuffSize)
-        emg(emgEnd+1:newEnd,:) = out-512;
-    else
-        newEnd = newEnd-emgStart+1;
-        emg(1:newEnd,:) = [emg(emgStart:emgEnd,:); out-512];
-        emgStart = 1;
-        if(newEnd > tmpBuffSize)
-            warning('resizing emg buffer');
-            tmpBuffSize = newEnd;
-        end
-    end
-    emgEnd = newEnd;
-    
-    % segmentation
-    [heads, tails] = findBurst( filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))) );
-    nBursts = length(heads);
+    signal.add(out);
     
     if DBG>1
-        fprintf('- emgStart %d, emgEnd %d, len %d\n', ...
-            emgStart, emgEnd, emgEnd-emgStart+1);
+        fprintf('signal length: %d\n', size(signal.sig,1));
     end
     
-    if DRAW==2
-        low = max(filter(nLow, dLow, abs(emg(emgStart:emgEnd,:))),[],2); %#ok<UNRCH>
+    nBurst = signal.findBursts();
+    
+    if(nBurst>0)
         
-        clf(f);
-        figure(f);
-        subplot(3,2,[1 3 5]);
-        if(nBursts==0)
-            plot(low);
+        fprintf('- got %d bursts\n', nBurst);
+        
+        if ICA
+            feats = signal.extractFeatures('ica');
         else
-            plot(1:length(low), low, ...
-                heads(1):tails(1), low(heads(1):tails(1)),'r');
-            legend('moving average','found burst');
-        end
-    end
-    
-    
-    if(nBursts == 0)    % nothing here, trash it
-        emgStart = emgEnd-100;
-    else
-        % adjusting indices
-        ls = tails-heads+1;
-        heads = heads + emgStart-1;
-        tails = tails + emgStart-1;
-        
-        if DBG
-            fprintf('got %d burst(s)\n', nBursts);
-            fprintf('burst @ %d, length %d \n', heads, ls);
+            feats = signal.extractFeatures();
         end
         
-        % feature extraction
-        for bb = 1:nBursts
-            if(ls(bb)>110)  % FIXME: under 110 (tune this) samples the result isn't very relailable
-                if DBG
-                    tAn = toc;
-                end
+        for ff = 1:length(feats)
+            
+            if(~isempty(feats{ff}))
+                nnRes = sim(net, feats{ff});
                 
-                if ICA
-                    % rebuilding the signal using only most relevant components
-                    [s, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
-                    if DBG
-                        tIca = toc;
-                    end
-                    feat = extractFeatures(s);
-                else
-                    feat = extractFeatures( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)) );
-                end                
-                if DBG
-                    tEx = toc;
-                end
-                
-                nnRes = sim(net, feat);
-                if DBG
-                    tNN = toc;
-                end
-                
-                resp = find(nnRes>0.6);
-                fprintf('   %.3f', nnRes);
-                fprintf('\n');
-                
-                if(strcmp(class(board),'dummyboard'))
-                    for rr = resp'
-                        fprintf('gesture %d (after %.4f s)\n', ...
-                            rr, toc-board.gTime);
-                    end
-                else
-                    fprintf('gesture %d\n', resp);
+                [~, rec] = max(nnRes.*(nnRes>.6));
+                if rec
+                    fprintf(' - gesture %d (', rec)
+                    fprintf('   %.3f', nnRes);
+                    fprintf('   ) - len: %d\n', ...
+                        signal.tails(ff)-signal.heads(ff)+1);
                 end
                 
                 if PM
-                    switch max(resp)
+                    switch max(rec)
                         case 1 % close hand
-                            pm.moveClose;
+                            polim.moveClose();
                             disp('Closing hand');
                             
                         case 2 % open hand
-                            pm.moveOpen;
+                            polim.moveOpen();
                             disp('Opening hand');
                             
                         case 7 % I know, technically is index... pretend it's pinch
-                            pm.movePinch;
+                            polim.movePinch();
                             disp('Pinching');
                     end
                 end
-                
-                if DBG
-                    if ICA
-                        fprintf(['time from last acquisition: %.3fs ' ...
-                            '(ICA: %.3fs, feats: %.3fs, NN: %.3fs)\n\n'], ...
-                            toc-tAcq, tIca-tAn, tEx-tIca, tNN-tEx);
-                    else
-                        fprintf(['time from last acquisition: %.3fs ' ...
-                            '(feats: %.3fs, NN: %.3fs)\n\n'], ...
-                            toc-tAcq, tEx-tAn, tNN-tEx);
-                    end
-                end
-                
-            else    % if the signal is too short
-                if ICA
-                    % compunting A (to be used as initguess to speedup
-                    % later analysis)
-                    tAn = toc;
-                    [~, a] = ica( filter(nHigh, dHigh, emg(heads(bb):tails(bb),:)), a);
-                    tIca = toc;
-                    fprintf('time fastICA only: %.3f\n', tIca-tAn);
-                end
-                if(DBG)
-                    fprintf('... but is so short that isn''t worth analyzing it\n\n');
-                end
             end
-            
         end
-        
-        if(emgEnd>tails(end))   % tail < emgEnd => burst is closed, we can flush it
-            emgStart = emgEnd-100;
-            a = []; % clearing initual guess
-            if DBG
-                fprintf('burst closed\n\n');
-            end
-        else    % tail==emgEnd => incomplete burst, keep it
-            emgStart = heads(end);
-        end
+    else
+        rec = 0;
     end
     
-    if DRAW     % drawing recognized signals
-        
-        if(DRAW==1)
-            clf(f);
-        end
+    if DRAW
+        clf(f);
         figure(f);
-        for cc = [1,2,3]
-            subplot(3,DRAW,DRAW*cc); hold on;
-            plot(1:tmpBuffSize, emg(:,cc), ...
-                emgStart:emgEnd, emg(emgStart:emgEnd,cc),'r');
-%             ax = axis;
-            axis([1,tmpBuffSize,-512,512])
-            plot([emgEnd,emgEnd],[-512,512],'g');
+        subplot(3,2,[1 3 5]); hold on;
+        title(sprintf('Recognized: %d',rec));
+        if(nBurst)
+            plot(signal.low(:,signal.ch(end)));
+            plot(signal.heads(end):signal.tails(end),...
+                signal.low(signal.heads(end):signal.tails(end),signal.ch(end)),'r');
+        else
+            plot(1,50); % that's only to rescale
+            plot(max(signal.low,[],2))
+        end
+        for cc = 1:3
+            subplot(3,2,2*cc); hold on;
+            plot(signal.sig(:,cc));
             ylabel(sprintf('Ch%d',cc));
+            axis([1,size(signal.sig,1),-512,512]);
+            for bb = 1:nBurst
+                plot(signal.heads(bb):signal.tails(bb), ...
+                    signal.sig(signal.heads(bb):signal.tails(bb),cc), ...
+                    'r');
+            end
         end
         drawnow;
-        %         pause();
     end
     
-end
-
-
-catch e
-    getReport(e);
-    disp('EXCEPTION! NOW DEBUG!')
-    keyboard;
+    signal.clearSignal;
+    
 end
 
 end

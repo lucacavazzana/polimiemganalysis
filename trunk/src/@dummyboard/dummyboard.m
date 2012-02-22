@@ -30,7 +30,7 @@ classdef dummyboard < emgboard
             if(exist('src','var'))
                 DB.port = src;
             else
-                DB.port = 'emgsA.mat';  % MA QUESTI SONO GIà FILTRATI!
+                DB.port = 'tmp/emgsA.mat';  % MA QUESTI SONO GIà FILTRATI!
             end
         end
         
