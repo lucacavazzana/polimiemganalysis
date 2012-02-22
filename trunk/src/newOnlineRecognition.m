@@ -14,6 +14,11 @@ clc;
 close all;
 fclose all;
 
+if(strcmp(net,'network'))
+    net = emgnet(net);
+    assert(strcmp(net,'emgnet'));
+end
+
 % clear ports if still open (assuming the serial objects were tagged)
 try
     fclose(instrfind('Tag','EmbBoard'));
@@ -40,7 +45,7 @@ end
 if DUMMY
     board = dummyboard();
 else
-    board = emgboard('COM6');
+    board = emgboard('COM13');
 end
 board.open('log');
 %---- OPENING POLIMANUS PORT --------
@@ -50,7 +55,7 @@ if PM
 end
 %------------------------------------
 
-signal = emgsig(240);
+signal = emgsig(emgboard.sRate);
 
 if DRAW
     f = figure;

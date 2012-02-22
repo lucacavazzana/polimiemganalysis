@@ -1,13 +1,15 @@
 function [coefs,varargout] = myCwt(SIG,scales,WAV,xWAV,plotmode,xlim)
 %MYCWT Real or Complex Continuous 1-D wavelet coefficients.
-%   THIS IS A MODIFIED VERSION OF THE ORIGINAL CWT so that
+%   THIS IS A CUSTOMIZATION OF THE ORIGINAL CWT: it
 %   receives as input an already built wavelet, so that
 %   doesn't have to call every time INTWAVE (which slows
 %   down execution). Mathworks, please, don't sue me.
 %
 %   See also CWT
 
-%
+%   Comments by Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
+
 %   COEFS = CWT(S,SCALES,'wname') computes the continuous
 %   wavelet coefficients of the vector S at real, positive
 %   SCALES, using wavelet whose name is 'wname'.

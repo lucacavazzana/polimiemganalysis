@@ -1,7 +1,11 @@
 function [] = testEigenEMG()
-% testing PCA
-% http://math.loyola.edu/reports/tr2009_01.pdf
-% http://www.pages.drexel.edu/~sis26/Eigenface%20Tutorial.htm
+%	testing PCA
+%	http://math.loyola.edu/reports/tr2009_01.pdf
+%	http://www.pages.drexel.edu/~sis26/Eigenface%20Tutorial.htm
+
+%	looks like a fail
+
+%	TAG: test
 
 NEIG = 10;  % number of eigenvector to consider
 

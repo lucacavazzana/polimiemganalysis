@@ -4,7 +4,7 @@ classdef emgsig < handle
 %   sample rate of the acquisition.
 %
 %   See also ADD, CLEARSIGNAL, EXTRACTFEATURES, FINDBURSTS, GETBURSTS,
-%   PLOTSIGNAL
+%   PLOTBURST, PLOTSIGNAL
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
@@ -42,7 +42,8 @@ classdef emgsig < handle
             EMG.sRate = sRate;
             
             % sRate/2 is the Nyquist frequency
-            [EMG.nLow, EMG.dLow] = butter(2, 2 * 2/sRate);  % lowpass @2Hz
+%             [EMG.nLow, EMG.dLow] = butter(2, 2 * 2/sRate);  % lowpass @2Hz
+            [EMG.nLow, EMG.dLow] = butter(2, [0.1 2] * 2/sRate);  % bandpass @[.1 2]Hz. .1 is to remove mean value
             [EMG.nHigh, EMG.dHigh] = butter(2, 10 * 2/sRate, 'high');  % highpass @10Hz
             
             % building wavelet
@@ -50,11 +51,15 @@ classdef emgsig < handle
             
         end
         
-        function setSignal( EMG, sig )
+        function len = setSignal( EMG, sig )
             %SETSIGNAL sets the signal
-            %   replaces the SIG properties with the one provided
+            %   replaces the SIG properties with the one provided. Returns
+            %   signal length.
             
             EMG.sig = sig;
+            EMG.low = [];
+            
+            len = size(EMG.sig,1);
         end
         
     end     % methods

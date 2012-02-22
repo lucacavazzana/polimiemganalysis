@@ -6,11 +6,11 @@ function nBursts = findBursts(EMG)
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
 
-SAMPLEDUR = round(EMG.sRate*.05);    % samples for ~.05 sec
+SAMPLEDUR = round(EMG.sRate*0.05);    % samples for ~.05 sec
 
 m = mean(EMG.sig);
 for cc = 3:-1:1
-   cent(:,cc) = EMG.sig(:,cc) - m(cc);
+   cent(:,cc) = EMG.sig(:,cc) - m(cc);  % zero mean sig
 end
 % lowpass
 EMG.low = filter(EMG.nLow, EMG.dLow, ...
@@ -28,12 +28,14 @@ intCh = cumsum(EMG.low);
 % intCh = cumsum([ 3*EMG.low(1:50,:); EMG.low(51:end,:) ]);
 % intEmg = max(intCh,[],2);
 
+MINVAL = 5;
+
 ii = 15;
 while(ii < ls)
     
-    if( any( EMG.low(ii,:) > 10) & ...    % signal has to be at least 10
+    if( any( EMG.low(ii,:) > MINVAL) & ...    % signal has to be at least MINVAL
             (EMG.low(ii,:) >= 1.1*EMG.low(ii-14,:) ) )  % signal increasing
-    % if( any( EMG.low(ii,:) > 10) & ...    % signal has to be at least 10
+    % if( any( EMG.low(ii,:) > MINVAL) & ...    % signal has to be at least MINVAL
     %         (EMG.low(ii,:) >= 1.2*intEmg(ii)/ii ) )  % signal greather than movin avg
         
         prev = max(ii-100, 1);  % shifting back some samples
@@ -46,7 +48,7 @@ while(ii < ls)
             % closing = .95*intEmg(next)/next; % close using current mean value
             closing = .9*(intCh(next-1)-intCh(prev))/(next-prev);   % close when signal < mean burst energy
             if(EMG.low(next, maxCh) >= closing && ...
-                    EMG.low(next, maxCh) > 10 )
+                    EMG.low(next, maxCh) > MINVAL )
                 next = next+10;
             else    % close the burst
                 break;
@@ -63,7 +65,7 @@ while(ii < ls)
         
     end    % no burst opening
     
-    ii = ii+10;
+    ii = ii+1;
     
 end
 

@@ -1,67 +1,101 @@
-function testNet(net)
+function testNet(folder, net, varargin)
+%   ...
+%
+%   TESTNET(FOLDER, NET, ...)
+%
+% INPUT -
+%    FOLDER :   files folder name
+%
+% OPTIONAL -
+%       NET :   network instance or filename where the net is stored
+%    'plot' :
+
+%   TAG: test
+
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 close all;
 
-if(~exist('net','var')||isempty(net))
-    load('net.mat','net');
-    net = net{1};
+if nargin == 0
+    folder = 'asd';
 end
 
-PATIENT = 'asd';
-DRAW = 1;
-
-% initializing network struct
-net = nn.hints(net);
-if net.hint.zeroDelay, nnerr.throw('Network contains a zero-delay loop.'); end
-netStr = struct(net);
-
-files = dir([PATIENT, '/ch1/']);
-files = files(~[files.isdir]);
-
-if DRAW
-    figure;
+if(~(nargin>1 && ~isempty(net)))
+    load([folder, '/net.mat'],'nets');
+    net = nets{1};
+    clear nets;
+    
+elseif(ischar(net))
+    load('net.mat','nets');
+    net = nets{1};
+    clear nets;
 end
+
+% creating network obj
+if(strcmp(class(net),'network'))
+    net = emgnet(net);
+end
+
+PLOT = 0;
+
+for ii = 1:length(varargin)
+    switch(varargin{ii})
+        case 'plot'
+            PLOT = 1;
+            fig = 0;
+    end
+end
+
+files = dir(sprintf('%s/ch1/*.txt', folder));
+
+emg = emgsig(emgboard.sRate);
 
 for ii = 1:length(files)
-    clear emg;
+    
     % reading file
-    emg(:,3) = convertFile2MAT([PATIENT,'/ch3/',files(ii).name]);
-    emg(:,2) = convertFile2MAT([PATIENT,'/ch2/',files(ii).name]);
-    emg(:,1) = convertFile2MAT([PATIENT,'/ch1/',files(ii).name]);
+    emg.setSignal( getSig(folder, files(ii).name) );
+    nb = emg.findBursts();
+    feats = emg.extractFeatures();
     
     fprintf(' - Analyzing %s:\n',files(ii).name);
-       
-    feats = analyzeEmg(emg, 'feats', .5, 'ica');
-    if DRAW
-        bursts = analyzeEmg(emg, 'emg', .5);
-        drawnow;
-    end
+    
+    for ff = 1:nb
         
-    for ff = 1:length(feats)
+        res = sim(net, feats{ff});
         
-        nnRes = mySim(netStr, feats{ff});
+        fprintf('--- %s - burst %d/%d   ---\n', files(ii).name, ff, length(feats));
+        fprintf('gesture ');
+        fprintf('%d ', find(res>.5));
+        fprintf('(');
+        fprintf('   %.3f', res);
+        fprintf('   )\n');
         
-        fprintf('--- %s - burst %d/%d   ---', files(ii).name, ff, length(feats));
-        fprintf('   %.3f', nnRes);
-        fprintf('\n');
-        fprintf('gesture %d\n', find(nnRes>.5));
-        
-        if DRAW % drawing
-            clf;
-            subplot(3,1,1);
-            plot(bursts{ff}(:,1));
-            title(sprintf('%s - burst %d/%d', files(ii).name, ff, length(feats)));
-            subplot(3,1,2);
-            plot(bursts{ff}(:,2));
-            subplot(3,1,3);
-            plot(bursts{ff}(:,3));
-            drawnow;
+%         keyboard;
+        if PLOT % drawing
             
+            if(fig==0)
+                fig = figure;
+            end
+            
+            emg.plotBurst(ff,fig);
             pause;
         end
     end
     
+    if PLOT
+        emg.plotSignal(fig);
+    end
+    
+    fprintf('\npress a key to continue\n');
     pause;
 end
+
+
+    function ch = getSig(folName, fileName)
+        ch(:,3) = convertFile2MAT([folName,'/ch3/',fileName]);
+        ch(:,2) = convertFile2MAT([folName,'/ch2/',fileName]);
+        ch(:,1) = convertFile2MAT([folName,'/ch1/',fileName]);
+    end
 
 end

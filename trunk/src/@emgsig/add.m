@@ -7,6 +7,7 @@ function len = add(EMG, samples)
 %   luca.cavazzana@gmail.com
 
     EMG.sig = cat(1, EMG.sig, samples-512);
+    EMG.low = [];
     
     len = size(EMG.sig,1);
 end

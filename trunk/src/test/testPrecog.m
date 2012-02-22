@@ -1,55 +1,52 @@
 function testPrecog(patient, nets, tr)
 %TESTPRECOG
-%  test recognition rate on NETS 
+%  WIP
+%  test recognition rate on NETS varying EMG length
 %
 %  INPUT
 %   PATIENT :	patient folder
 %      NETS :   cell array containing the nets to test
 %        TR :   cell array containing training records
 
+%   TAG: test
+
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
 
-global DBG;
-JMP = 1;    % skip the loading part (to speedup debugging)
+DBG = 0;
 
-if JMP
-    load('emgs.mat');
-else
-    
-    if DBG
-        patient = 'asd';
-    end
-    
-    if(ispc())
-        load([patient,'\gest.mat']);
-    else
-        load([patient,'/gest.mat']);
-    end
-    
-    emgs = cell(size(gest,1),1);
-    targets = [];
-    
-    for gg=1:size(gest,1) % for each gesture #ok<USENS>
-        
-        for rr=1:gest{gg,3} % for each repetition
-            emg=[];
-            
-            for cc=1:3
-                emg(:,cc) = convertFile2MAT(sprintf('%s\\ch%d\\%d-%d-%s.txt', ...
-                    patient, cc, gest{gg,1}, rr, gest{gg,2}));
-                emg(end,3) = emg(end,end);  % dirty way to resize the vector to avoid reallocation in the next cycle
-            end
-            
-            emgs{gg} = [emgs{gg} analyzeEmg(emg, 'emg')];
-        end
-        targets = [targets gg*ones(length(emgs{gg}),1)]; %#ok<AGROW>
-    end
-    
-    emgs = [emgs{:}];
-    
-    clear emg;
+if DBG
+    patient = 'asd';
 end
+
+if(ispc())
+    load([patient,'\gest.mat']);
+else
+    load([patient,'/gest.mat']);
+end
+
+emgs = cell(size(gest,1),1);
+targets = [];
+
+for gg=1:size(gest,1) % for each gesture #ok<USENS>
+    
+    for rr=1:gest{gg,3} % for each repetition
+        emg=[];
+        
+        for cc=1:3
+            emg(:,cc) = convertFile2MAT(sprintf('%s\\ch%d\\%d-%d-%s.txt', ...
+                patient, cc, gest{gg,1}, rr, gest{gg,2}));
+            emg(end,3) = emg(end,end);  % dirty way to resize the vector to avoid reallocation in the next cycle
+        end
+        
+        emgs{gg} = [emgs{gg} analyzeEmg(emg, 'emg')];
+    end
+    targets = [targets gg*ones(length(emgs{gg}),1)]; %#ok<AGROW>
+end
+
+emgs = [emgs{:}];
+
+clear emg;
 
 keyboard;
 
@@ -64,7 +61,7 @@ else
 end
 tot = resps;
 
-for nn = 1:length(nets)    
+for nn = 1:length(nets)
     for ii = tr{nn}.testInd
         
         fprintf('- net %d, burst %d\n', nn, ii);

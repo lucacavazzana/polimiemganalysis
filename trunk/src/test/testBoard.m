@@ -1,6 +1,11 @@
-% open emgBoard and plots raw data
+%	open emgBoard and plots raw data
 
-board = emgboard;
+%	TAG: test
+
+close all;
+
+board = emgboard([], ...
+    'dumpboard.txt');
 board.open;
 
 board.plotEmg;

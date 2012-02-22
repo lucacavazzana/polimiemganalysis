@@ -8,7 +8,7 @@ function ch = getEmg(DB)
 
 if(DB.last == 0)
     tic;
-    pause(.001);
+    pause(0.001);
     DB.last = toc;
 end
 

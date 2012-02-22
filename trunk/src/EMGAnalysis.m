@@ -1,7 +1,8 @@
 %EMGANALYSIS
-%	bla bla bla.
+%   START FROM HERE!
+%   launches the starting menu
 %
-%	requires fastICA (http://research.ics.tkk.fi/ica/fastica/)
+%   requires fastICA (http://research.ics.tkk.fi/ica/fastica/)
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
@@ -43,29 +44,37 @@ LUCA = 1;
 clc;
 sel = input(['What do you wanna do with your life?\n' ...
     '1- acquisition\n' ...
-    '2- train net\n' ...
+    '2- train nets\n' ...
     '3- test net\n' ...
     '4- rec online\n' ...
     '5- test precognition\n', ...
     '6- I wanna rock!\n']);
 
+
+folder = 'asd';
+
 switch(sel)
-    case 1
-        newFarmData();
-    case 2
-        [net tr] = newTrainNN('asd', 3, 1);
-        save('newNets.mat','net','tr');
-    case 3
-        load('fullNets10A.mat','net');
-        testNet(net{3});    % UPDATE THIS FUNTION WITH OO
-    case 4
-        load('fullNets10A.mat', 'net');
+    case 1  % acquire new training set
+        farmData();
+        
+    case 2  % train new NNs for classification
+        [nets trs] = trainNN(folder, 1, 1);
+        
+    case 3  % remove this one...
+        load(sprintf('%s/net.mat', folder),'nets');
+        testNet(nets{1});
+        
+    case 4  % online classification
+        load(sprintf('%s/net.mat', folder),'nets');
         newOnlineRecognition(net{1});
-    case 5
-        load('fullNets10A.mat')
-        testPrecog('asd', net, tr);
+        
+    case 5  % test recognition rate 
+        load(sprintf('%s/net.mat', folder),'nets');
+        testPrecog('asd', nets, trs);
+        
     case 6
-        web http://www.yo   utube.com/watch?v=SRwrg0db_zY&t=80 -browser;
+        web http://www.youtube.com/watch?v=SRwrg0db_zY&t=80 -browser;
+        
     otherwise
         printf('Wrong selection');
 end
