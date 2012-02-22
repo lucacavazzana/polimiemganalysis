@@ -1,7 +1,8 @@
 function status = open(EB, varargin)
 %OPEN opens serial port communication.
-%   STATUS = OPEN() opens serial port communication. Returns 1 if success.
-%   If 'log' option is given dumps raw data into emgboard.txt.
+%   STATUS = OPEN() opens serial port communication (and dump file if
+%   specified). Returns 1 on success.
+%   If 'log' option is given dumps raw data into 'emgboard.txt'.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
@@ -14,6 +15,11 @@ if(~isempty(varargin))
             LOG = 1;
         end
     end
+end
+
+% dump file
+if (EB.dumpH==-1 && ~isempty(EB.dump))
+    EB.dumpH = fopen(EB.dump,'w');
 end
 
 EB.ser = serial(EB.port);
@@ -35,8 +41,9 @@ catch e
     % if another exc is thrown, manually handle it...
 end
 
+% this is the builtin (less parser-friendly) dump
 if LOG
-    record(EB.ser,'on');
+    record(EB.ser, 'on');
 end
 
 status = 1;
