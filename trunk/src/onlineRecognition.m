@@ -19,6 +19,9 @@ for ii = 1:length(varargin)
         case 'plot'
             DRAW = 1;
             
+        case 'dummy'
+            DUMMY = 1;
+            
     end
 end
 
@@ -74,6 +77,8 @@ signal = emgsig(emgboard.sRate);
 
 if DRAW
     f = figure;
+    fOut = figure('Position',[100 100 100 100], ...
+        'Toolbar','none', 'Menubar','none');
 end
 
 while(size(signal.sig,1) < 110)
@@ -126,7 +131,16 @@ while(1)
                     fprintf('   %.3f', nnRes);
                     fprintf('   ) - len: %d\n', ...
                         signal.tails(ff)-signal.heads(ff)+1);
-                end
+                    
+                    if DRAW
+                        clf(fOut);
+                        figure(fOut);
+                        text(0.5, 0.5, num2str(rec), ...
+                            'FontSize', 30, ...
+                            'HorizontalAlignment', 'center');
+                    end % if DRAW
+                    
+                end     % if rec
                 
                 if PM
                     switch max(rec)
@@ -143,7 +157,7 @@ while(1)
                             disp('Pinching');
                     end
                 end
-            end
+            end     % if any feature
         end
     else
         rec = 0;

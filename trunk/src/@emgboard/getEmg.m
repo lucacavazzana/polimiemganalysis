@@ -1,8 +1,8 @@
 function [ch data] = getEmg(EB, w)
 %GETEMG sparse emg signal from emgboard.
-%   [CH DATA] = GETEMG(W) parses data from the emgboard and returns the 
-%   signal as Nx3 matrix, where N is the signal length, 3 the number of 
-%   channels. If W is given and not zero, GETEMG will wait for new data if 
+%   [CH DATA] = GETEMG(W) parses data from the emgboard and returns the
+%   signal as Nx3 matrix, where N is the signal length, 3 the number of
+%   channels. If W is given and not zero, GETEMG will wait for new data if
 %   the serial buffer is empty (or return an empty CH otherwise). DATA is
 %   the raw otput from the serial.
 %
@@ -21,6 +21,7 @@ end
 data = EB.getRaw(w);
 
 if( isempty(data) )
+    ch = zeros(0,3);
     return;
 end
 

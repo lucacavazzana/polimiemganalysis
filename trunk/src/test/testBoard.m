@@ -4,7 +4,7 @@
 
 close all;
 
-board = emgboard([], ...
+board = emgboard('COM13', ...
     'dumpboard.txt');
 board.open;
 
