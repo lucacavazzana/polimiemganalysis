@@ -8,6 +8,8 @@
 %   luca.cavazzana@gmail.com
 
 clear all;
+close all;
+fclose all;
 clc;
 
 % global PORT;
@@ -51,14 +53,14 @@ sel = input(['What do you wanna do with your life?\n' ...
     '6- I wanna rock!\n']);
 
 
-folder = 'asd';
+folder = 'darioPinch01';
 
 switch(sel)
     case 1  % acquire new training set
         farmData();
         
     case 2  % train new NNs for classification
-        [nets trs] = trainNN(folder, 1, 1);
+        [nets trs] = trainNN(folder, 2, 1);
         
     case 3  % remove this one...
         load(sprintf('%s/net.mat', folder),'nets');
