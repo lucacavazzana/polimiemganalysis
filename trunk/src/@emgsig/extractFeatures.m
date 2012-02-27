@@ -25,7 +25,7 @@ end
 
 for bb = 1:nBursts
     
-    if (EMG.tails(bb)-EMG.heads(bb)) < 120  % too small, isn't worth analyzing it
+    if (EMG.tails(bb)-EMG.heads(bb)) < 50  % too small, isn't worth analyzing it
         
         if ICA  % computing weights warmup next iteration
             s = filter(EMG.nHigh, EMG.dHigh, ...

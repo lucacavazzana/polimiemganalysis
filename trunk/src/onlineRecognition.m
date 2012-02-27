@@ -63,7 +63,7 @@ else
         ii = ii+1;
         dump = sprintf('dumpboard%d.txt', ii);
     end
-    board = emgboard('COM6', dump);
+    board = emgboard('COM13', dump);
 end
 board.open('log');
 %---- OPENING POLIMANUS PORT --------
