@@ -22,13 +22,13 @@ f = figure;
 for asd = emgs'
     
     sig.setSignal(asd{1}-512);
-    sig.findBursts();
+    n=sig.findBursts();
     
     sig.plotSignal(f);
     
     if(~isempty(fnames))
         subplot(311);
-        title(fnames(ii).name);
+        title(sprintf('%s - %d',fnames(ii).name,n));
         ii = ii+1;
     end
     

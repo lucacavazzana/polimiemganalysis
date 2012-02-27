@@ -53,7 +53,7 @@ sel = input(['What do you wanna do with your life?\n' ...
     '6- I wanna rock!\n']);
 
 
-folder = 'darioPinch01';
+folder = 'lucaPM';
 
 switch(sel)
     case 1  % acquire new training set

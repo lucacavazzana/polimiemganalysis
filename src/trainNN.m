@@ -110,7 +110,7 @@ net.divideParam.trainRatio = .75;
 net.divideParam.valRatio = .15;
 net.divideParam.testRatio = .1;
 net.performFcn = 'mse';  % mean squared error
-keyboard
+
 for ii = 1:nnn
     
     rate = 0;
