@@ -1,5 +1,5 @@
 function [coefs,varargout] = myCwt(SIG,scales,WAV,xWAV,plotmode,xlim)
-%MYCWT Real or Complex Continuous 1-D wavelet coefficients.
+%MYCWT  Real or Complex Continuous 1-D wavelet coefficients.
 %   THIS IS A CUSTOMIZATION OF THE ORIGINAL CWT: it
 %   receives as input an already built wavelet, so that
 %   doesn't have to call every time INTWAVE (which slows

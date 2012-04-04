@@ -1,7 +1,15 @@
-function plotRaw(filename)
+function ch = plotRaw(filename)
+%PLOTRAW    plot signal in raw file data
+%   CH = PLOTRAW(FILENAME) plots the unparsed signal stored in FILENAME.
+%   Returns also CH, the signal matrix.
+%
+%   TAGS: utility
+
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 file = fopen(filename);
-data = fscanf(file ,'%c',inf);
+data = fscanf(file,'%c',inf);
 
 fclose(file);
 

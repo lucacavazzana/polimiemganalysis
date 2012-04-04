@@ -1,6 +1,6 @@
 function [Y,Xf,Af,E,perf] = sim(net,varargin)
 %SIM Simulate a neural network
-%  This is a custom-made override of the original SIM function. The
+%  This is a custom-made override of the original SIM method. The
 %  difference from the original one is the network class must contain in
 %  the fild strNet a struct containing the already-converted net, in order
 %  to avoid wasting time converting it every time the original SIM is
@@ -32,7 +32,7 @@ function [Y,Xf,Af,E,perf] = sim(net,varargin)
 %    Si = NET.<a href="matlab:doc nnproperty.net_layers">layers</a>{i}.<a href="matlab:doc nnproperty.layer_size">size</a>
 %    Ui = NET.<a href="matlab:doc nnproperty.net_outputs">outputs</a>{i}.<a href="matlab:doc nnproperty.output_size">size</a>
 %
-%  See also SIM, INIT, REVERT, ADAPT, TRAIN
+%  See also SIM in NNET, INIT, REVERT, ADAPT, TRAIN
 
 %   Copyright 1990-2010 The MathWorks, Inc.
 %   $Revision: 1.19.2.9.2.1 $

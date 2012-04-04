@@ -1,5 +1,8 @@
 function [res] = getPot(PM)
-%GETPOT get potentiometers' values
+%GETPOT get potentiometers' values.
+%   RES = PM.GETPOT() returns an array whose elements are the values
+%   acquired from the potentiometers.
+%   WIP
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

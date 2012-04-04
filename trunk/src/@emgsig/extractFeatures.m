@@ -11,30 +11,47 @@ function feats = extractFeatures(EMG, varargin)
 nBursts = size(EMG.heads,2);
 feats = cell(1, nBursts);
 
+ICA = 0;
+COMPL = 0;
+for inp = varargin
+    if(strcmp(inp,'ica'))
+        ICA = 1;
+    elseif(strcmp(inp,'compl'))
+        COMPL = 1;
+    end
+end
+
+if COMPL    % extract feats from the complete signal, regardless burst detection
+    s = filter(EMG.nHigh, EMG.dHigh, EMG.sig);
+    if ICA
+        [s, EMG.a] = ica( s, [] );
+    end
+    feats{1} = extractFeatures(s, EMG.scales, EMG.yWAV, EMG.xWAV);
+    return;
+end
+
+
 if (nBursts == 0)
     feats = {};
     return;
 end
 
-ICA = 0;
-for inp = varargin
-    if(strcmp(inp,'ica'))
-        ICA = 1;
-    end
-end
-
 for bb = 1:nBursts
     
-    if (EMG.tails(bb)-EMG.heads(bb)) < 50  % too small, isn't worth analyzing it
+    if (EMG.tails(bb)-EMG.heads(bb)) < 120  % too small, isn't worth analyzing it
         
         if ICA  % computing weights warmup next iteration
             s = filter(EMG.nHigh, EMG.dHigh, ...
                 EMG.sig(EMG.heads(bb):EMG.tails(bb),:));
             [~, EMG.a] = ica( s, EMG.a );
+        
+        % else nothing
+        
         end
         
     else
         
+        % highpass
         s = filter(EMG.nHigh, EMG.dHigh, ...
             EMG.sig(EMG.heads(bb):EMG.tails(bb),:));
         
@@ -42,7 +59,7 @@ for bb = 1:nBursts
             [s, EMG.a] = ica( s, EMG.a );
         end
         
-        feats{bb} = extractFeatures(s, EMG.yWAV, EMG.xWAV);
+        feats{bb} = extractFeatures(s, EMG.scales, EMG.yWAV, EMG.xWAV);
         
     end
     

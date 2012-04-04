@@ -1,5 +1,5 @@
 function sig = convertFile2MAT(file)
-%CONVERTFILE2MAT Extrat emg data from file
+%CONVERTFILE2MAT    Extrat emg data from file
 %   SIG = CONVERTFILE2MAT(F) returns the data vector A extracted frome txt
 %   file F.
 %

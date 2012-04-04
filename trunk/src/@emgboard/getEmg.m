@@ -1,15 +1,13 @@
 function [ch data] = getEmg(EB, w)
-%GETEMG sparse emg signal from emgboard.
-%   [CH DATA] = GETEMG(W) parses data from the emgboard and returns the
-%   signal as Nx3 matrix, where N is the signal length, 3 the number of
-%   channels. If W is given and not zero, GETEMG will wait for new data if
-%   the serial buffer is empty (or return an empty CH otherwise). DATA is
-%   the raw otput from the serial.
+%GETEMG get parsed EMG signal from ERACLE.
+%   [CH DATA] = EB.GETEMG(W) get and parses the signal from the EMG board
+%   and returns the signal CH as Nx3 matrix, where N is the signal length
+%   and 3 the number of channels. If W is given and not zero, the call will
+%   be blocking. If specified, DATA is the raw output from the serial.
 %
-%   BEWARE! Too much time between two serial reading (ie: long analysis
-%   time) could let the serial buffer to fill, missing some emg samples
-%   and crashing this function when trying to concatenate the new chunk
-%   with the old one.
+%   NOTE: too much time between two consecutive serial reading (ie: long
+%   analysis time) could cause the input buffer to fill, thus losing data.
+%   This way the parser could be unable to concatenate the two outputs.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

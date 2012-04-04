@@ -1,11 +1,11 @@
 function moveClose(PM, s)
-%MOVECLOSE perform close hand movement
-%   MOVECLOSE(S) commands hand closing at speed S (within 0 an 255).
+%MOVECLOSE pPerform close hand movement.
+%   PM.MOVECLOSE(S) command hand closing with speed S (within 0 an 255).
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
 
-if ~exist('s','var')
+if(nargin==1)
     s = 255;
 end
 
