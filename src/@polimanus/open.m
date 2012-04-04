@@ -1,11 +1,13 @@
 function status = open(PM, varargin)
-%OPEN open serial port
+%OPEN open serial communication.
+%   STATUS = PM.OPEN(varargin) opens serial port communication, returning
+%   success status. If the string log is within the optional arguments the
+%   serial communication is dumped on disk.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com
 
 LOG = 0;
-
 if(~isempty(varargin))
     for inp = varargin
         if(strcmp(inp,'log'))

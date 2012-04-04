@@ -1,4 +1,4 @@
-function newFarmData(PORT)
+function farmData(PORT)
 %FARMDATA   Acquires training sets
 %   FARMDATA(PORT) saves the acquired values in a subfolder of the current
 %   path, plus a gest.mat file containing gestures name, ID and

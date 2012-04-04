@@ -1,5 +1,5 @@
 function feats = analyzeEmg(emg, action, burstRatio, varargin)
-%ANALYZEEMG
+%ANALYZEEMG	deprecated
 % INPUT
 %           EMG :	raw emg data (expects a values within 0-1024)
 %        ACTION :   'feats' if yout want the computed features

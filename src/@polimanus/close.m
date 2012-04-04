@@ -1,5 +1,6 @@
 function close(PM)
-%CLOSE close serial port
+%CLOSE close serial communication.
+%   PM.CLOSE() closes the serial port communication.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

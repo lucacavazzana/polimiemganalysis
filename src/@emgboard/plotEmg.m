@@ -1,7 +1,9 @@
 function plotEmg(EB, fi)
-%PLOTEMG plot current signal
-%   PLOTEMG plots the current signal (in red the latest acquisition). If
-%   the handler is specified plots in the associated window.
+%PLOTEMG real-time signal plot
+%   F = EB.PLOTEMG(F) plots the signal from the EMG board. It takes as
+%   parameter (optional) and returns the handler F of the window where the
+%   signal is drawn. The signal from the latest acquisition is plotted in
+%   red.
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

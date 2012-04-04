@@ -1,8 +1,8 @@
 function plotAll(folder, findB)
-%PLOTALL plot all acquisitions
+%PLOTALL    plot all acquisitions
 %   PLOTALL(FOLDER, FINDBURST) plots all acquisitions in FOLDER. If
 %   findburst exist and ~=0 the signal is segmented too.
-
+%
 %   TAGS: utility
 
 %   By Luca Cavazzana for Politecnico di Milano
@@ -29,6 +29,7 @@ for ii = 1:length(parsed)
     sig.plotSignal(f);
     subplot(311);
     title(sprintf('file %d, gest %d', ii, parsed{ii,2}));
+    fprintf('file %d, gest %d.\nPress a key to continue\n', ii, parsed{ii,2});
     pause;
 end
 

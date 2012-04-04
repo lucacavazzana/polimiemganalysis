@@ -1,7 +1,8 @@
 function plotBurst( EMG, ind, f )
 %PLOTBURST plots the i-th burst detected
-%   PLOTBURST(II, F) plots the II-th burst detected (if exists) into figure
+%   PLOTBURST(N, F) plots the N-th burst detected (if exists) into figure
 %   F (if provided).
+%   WIP
 
 %   By Luca Cavazzana for Politecnico di Milano
 %   luca.cavazzana@gmail.com

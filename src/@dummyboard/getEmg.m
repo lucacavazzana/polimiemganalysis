@@ -24,7 +24,7 @@ if(nSamples == 0)
     return;
 end
 
-if( DB.move == 0)
+if(DB.move == 0)
     ch = round(2*randn(nSamples,3))+512;   % no gestures, generating random noise
     return;
     

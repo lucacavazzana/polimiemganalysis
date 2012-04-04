@@ -1,6 +1,14 @@
-function parseRaw(folder)
-% utility. Opens all raw files into FOLDER and separate channels into
-% separate files
+function ch = parseRaw(folder)
+%PARSERAW   Convert raw data ?le.
+%   CH = PARSERAW(FOLDER) opens the ?les stored into FOLDER, parses the
+%   contained raw signal (as taken from the EMG board) and separates the
+%   channels into different ?les (FOLDER/ch#). Returns also the matrix of
+%   the parsed samples.
+%
+%   TAGS: utility
+
+%   By Luca Cavazzana for Politecnico di Milano
+%   luca.cavazzana@gmail.com
 
 files = ls(sprintf('%s/*.txt', folder));
 

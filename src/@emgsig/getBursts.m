@@ -1,5 +1,7 @@
-function bursts = getBursts(EMG, varargin)
+function bursts = getBursts(EMG)
 %GETBURST returns the raw data of the detected bursts
+%   BURSTS = GETBURSTS() returns a cell-array where each elements contains
+%   the samples of the bursts detected by FINDBURSTS.
 %
 %   See also FINDBURSTS
 

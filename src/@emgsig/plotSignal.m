@@ -1,8 +1,8 @@
 function f = plotSignal(EMG, f)
-%PLOTBURSTS plots found bursts
-%   PLOTSIGNAL plots the emg signal highlighting the bursts found with
-%   FINDBURST. If provided the handler F plots in the associated figure
-%   (plots in a new window otherwise).
+%PLOTBURSTS plots EMG signal
+%   F = PLOTSIGNAL(F) plots the emg signal highlighting the bursts in case
+%   found with FINDBURST. If provided the handler F plots in the associated
+%   figure (plots in a new window otherwise).
 %
 %   See also FINDBURSTS
 

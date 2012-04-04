@@ -1,14 +1,12 @@
-function [s a] = ica(emg, a, aOnly)
-%ICA
-%
-% INPUT
-%   EMG :   LxCH emg signal
-%     A :   optional, initial weight guess
-% AONLY :   def =0. If =1 returns only the A matrix
-%
-% OUTPUT
-%   SIG :   recomputed signal (=[] if AONLY)
-%     A :   recombination weights
+function [s, a] = ica(emg, a, aOnly)
+%ICA    Performs ICA denoising.
+%   [S, A] = ICA(SIG , ASTART, AONLY) performs ica denoising, extracting the
+%   independent sources and reconstructing the original signal after a
+%   dynamical thresholding of the weights. It takes as input the Lx3 signal
+%   SIG, where L is the length of the signal, and the (optional) mixing
+%   matrix ASTART as initial value. Returns the denoised signal S and the
+%   computed matrix A. If AONLY is provided and equal to 1 S is not
+%   computed and only a is returned.
 
 %  By Luca Cavazzana for Politecnico di Milano
 %  luca.cavazzana@gmail.com
