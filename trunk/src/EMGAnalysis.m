@@ -1,4 +1,4 @@
-%EMGANALYSIS
+% EMGANALYSIS
 %   START FROM HERE!
 %   launches the starting menu
 %
